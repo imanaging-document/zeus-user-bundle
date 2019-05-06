@@ -16,7 +16,7 @@ $ composer require imanaging-document/zeus-user-bundle
 Configuration
 ----------------------------------
 
-####Bundle configuration
+Bundle configuration
 
 You have to create a ```config/packages/imanaging_zeus_user.yaml``` file:
 ```yaml
@@ -27,7 +27,7 @@ imanaging_zeus_user:
 
 These fields are required and they must start with a "/".
 
-####Doctrine configuration :
+Doctrine configuration :
 ```yaml
 doctrine:
     orm:
@@ -43,7 +43,7 @@ You must set the entities you want to use.
 
 Basic usage
 ----------------------------------
-####Get the Synchronisation and Login service :
+Get the Synchronisation and Login service :
 ```php
 use Imanaging\ZeusUserBundle\Synchronisation;
 use Imanaging\ZeusUserBundle\Login;
@@ -60,7 +60,7 @@ class MyBeautifulService
    * @param Synchronisation $synchronisationService
    * ...
    */
-  public function __construct(..., Synchronisation $synchronisationService, Login $loginService ...){
+  public function __construct(..., Synchronisation $synchronisationService, Login $loginService, ...){
     ...
     $this->synchronisationService = $synchronisationService;
     $this->loginService = $loginService;
@@ -70,7 +70,7 @@ class MyBeautifulService
 }
 ```
 
-####Synchronisation
+Synchronisation
 ```php
 $result = $this->synchronisationService->synchroniserModules();
 if (is_array($result)){
@@ -98,7 +98,7 @@ if (is_array($result)){
 }
 ```
 
-####Login
+Login
 ```php
 $user = $loginService->canLog("LOGIN", "P@SSW0RD", "127.0.0.1");
 if ($user instanceof User){
