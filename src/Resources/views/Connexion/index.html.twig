@@ -1,0 +1,61 @@
+<table id="connexionsTable" class="table table-bordered table-striped text-center">
+  <thead>
+  <tr>
+    <th>Utilisateur</th>
+    <th>Login</th>
+    <th>Statut</th>
+    <th>Adresse IP</th>
+    <th>Date</th>
+    <th>Heure</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for connexion in connexions %}
+    <tr>
+      <td>
+        {% if connexion.user is not null %}
+          {{ connexion.user.prenom }} {{ connexion.user.nom }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>{{ connexion.login }}</td>
+      <td>{{ connexion.statut.libelle }}</td>
+      <td>
+        {% if connexion.adresseIp is not null %}
+          {{ connexion.adresseIp }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        {% if connexion.timeConnexion is not null %}
+          {{ connexion.timeConnexion|date('d/m/Y') }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        {% if connexion.timeConnexion is not null %}
+          {{ connexion.timeConnexion|date('H:i:s') }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<script>
+  $("#connexionsTable").dataTable({
+    "oLanguage": {
+      "sUrl": "{{asset("config/datatables/fr.json")}}"
+    },
+    "columnDefs": [{
+      "type": 'date-eu',
+      "targets": [4]
+    }],
+    aaSorting : [[4,'desc']]
+  });
+</script>
