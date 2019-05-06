@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="imanaging_zeus_user.login" class="Imanaging\ZeusUserBundle\Login">
+            <argument type="service" id="doctrine.orm.default_entity_manager" />
+            <argument type="service" id="imanaging_api_communication.api_zeus_communication" />
+            <argument type="service" id="security.user_password_encoder.generic"/>
+        </service>
+        <service id="imanaging_zeus_user.synchronisation" class="Imanaging\ZeusUserBundle\Synchronisation">
+            <argument type="service" id="doctrine.orm.default_entity_manager" />
+            <argument type="service" id="imanaging_api_communication.api_zeus_communication" />
+            <argument />
+            <argument />
+        </service>
+
+        <service id="Imanaging\ZeusUserBundle\Login" alias="imanaging_zeus_user.login" />
+        <service id="Imanaging\ZeusUserBundle\Synchronisation" alias="imanaging_zeus_user.synchronisation" />
+    </services>
+</container>
