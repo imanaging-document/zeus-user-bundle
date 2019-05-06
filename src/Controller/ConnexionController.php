@@ -3,10 +3,10 @@
 
 namespace Imanaging\ZeusUserBundle\Controller;
 use Imanaging\ZeusUserBundle\Interfaces\ConnexionInterface;
+use Imanaging\ZeusUserBundle\Interfaces\UserInterface;
 use Imanaging\ZeusUserBundle\Login;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-class ConnexionController extends AbstractController
+class ConnexionController extends ImanagingController
 {
   private $login;
 
@@ -15,12 +15,19 @@ class ConnexionController extends AbstractController
     $this->login = $login;
   }
 
-  public function index(){
-    $em = $this->getDoctrine()->getManager();
-    $connexions = $em->getRepository(ConnexionInterface::class)->findAll();
+  public function showTableConnexion(){
+    $user = $this->getUser();
+    if ($user instanceof UserInterface){
+      if ($this->userCanAccess($user, ['zeus_user_connexion_table_show'])){
+        $em = $this->getDoctrine()->getManager();
+        $connexions = $em->getRepository(ConnexionInterface::class)->findAll();
 
-    return $this->render('@ImanagingZeusUser/Connexion/index.html.twig', [
-      'connexions' => $connexions
+        return $this->render('@ImanagingZeusUser/Connexion/showTable.html.twig', [
+          'connexions' => $connexions
+        ]);
+      }
+    }
+    return $this->render('@ImanagingZeusUser/access_denied.html.twig', [
     ]);
   }
 }
