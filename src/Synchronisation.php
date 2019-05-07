@@ -64,6 +64,7 @@ class Synchronisation
           $foundModule->setOrdre($module->ordre);
           $foundModule->setNiveau($module->niveau);
           $foundModule->setDroite($module->droite);
+          $foundModule->setVisible($module->visible);
           $foundModule->setParent(null);
           $this->em->persist($foundModule);
           $nbModuleUpdated++;
@@ -82,6 +83,7 @@ class Synchronisation
             $newModule->setOrdre($module->ordre);
             $newModule->setNiveau($module->niveau);
             $newModule->setDroite($module->droite);
+            $newModule->setVisible($module->visible);
             $newModule->setParent(null);
             $this->em->persist($newModule);
             $nbModuleAdded++;

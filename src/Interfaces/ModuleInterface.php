@@ -33,6 +33,10 @@ interface ModuleInterface
 
   public function setDroite($droite);
 
+  public function isVisible();
+
+  public function setVisible($visible);
+
   public function getEnfants();
 
   public function setEnfants($enfants);
