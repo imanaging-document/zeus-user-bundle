@@ -15,9 +15,10 @@ class ImanagingController extends AbstractController
    * Gestion de l'accès aux différents modules
    * @param UserInterface $user
    * @param array $modulesRoute
+   * @param bool $showFlashBag
    * @return bool
    */
-  public function userCanAccess(UserInterface $user, array $modulesRoute){
+  public function userCanAccess(UserInterface $user, array $modulesRoute, $showFlashBag = true){
     $canAccess = false;
     if ($user instanceof UserInterface){
       $role = $user->getRole();
@@ -36,6 +37,14 @@ class ImanagingController extends AbstractController
             $canAccess = true;
           }
         }
+      }
+    }
+    if ($showFlashBag){
+      if (!$canAccess){
+        $this->get('session')->getFlashBag()->add(
+          'error',
+          'Vous ne pouvez pas accéder à ce module.'
+        );
       }
     }
     return $canAccess;
