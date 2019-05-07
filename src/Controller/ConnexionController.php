@@ -18,7 +18,7 @@ class ConnexionController extends ImanagingController
   public function showTableConnexion(){
     $user = $this->getUser();
     if ($user instanceof UserInterface){
-      if ($this->userCanAccess($user, ['zeus_user_connexion_table_show'])){
+      if ($this->userCanAccess($user, ['zeus_user_show_connexion_table'])){
         $em = $this->getDoctrine()->getManager();
         $connexions = $em->getRepository(ConnexionInterface::class)->findAll();
 
