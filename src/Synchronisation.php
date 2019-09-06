@@ -129,8 +129,8 @@ class Synchronisation
    * @return mixed
    */
   public function synchroniserRoles(){
-    $loginApiDashboard = getenv('ZEUS_API_LOGIN');
-    $passwordApiDashboard = getenv('ZEUS_API_PASSWORD');
+    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
+    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
 
     $url = $this->apiGetRolesPath.'?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
     $response = $this->apiZeusCommunicationService->sendGetRequest($url);
@@ -184,8 +184,8 @@ class Synchronisation
    * @return mixed
    */
   public function synchroniserUsers(){
-    $loginApiDashboard = getenv('ZEUS_API_LOGIN');
-    $passwordApiDashboard = getenv('ZEUS_API_PASSWORD');
+    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
+    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
 
     $url = '/utilisateurs/all?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
     $response = $this->apiZeusCommunicationService->sendGetRequest($url);
