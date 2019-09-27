@@ -187,7 +187,8 @@ class Synchronisation
     $loginApiDashboard = getenv('ZEUS_API_LOGIN');
     $passwordApiDashboard = getenv('ZEUS_API_PASSWORD');
 
-    $url = '/utilisateurs/all?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
+    $typeApplication = getenv('TYPE_APPLICATION');
+    $url = '/utilisateurs/all?login='.$loginApiDashboard.'&password='.$passwordApiDashboard.'&type_application='.$typeApplication;
     $response = $this->apiZeusCommunicationService->sendGetRequest($url);
 
     if ($response->getHttpCode() == 200){

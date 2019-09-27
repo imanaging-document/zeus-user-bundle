@@ -18,6 +18,12 @@ Configuration
 
 Bundle configuration
 
+You need to have a TYPE_APPLICATION in your ```.env``` or ```.env.local``` file :
+```yaml
+TYPE_APPLICATION: core
+```
+Where "core" is the type of your application.
+
 You have to create a ```config/packages/imanaging_zeus_user.yaml``` file:
 ```yaml
 imanaging_zeus_user:
