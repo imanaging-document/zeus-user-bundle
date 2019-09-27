@@ -198,7 +198,7 @@ class Synchronisation
       $decodedResponse = json_decode($response->getData());
       $users = $decodedResponse->users;
       foreach ($users as $user) {
-        $role = $this->em->getRepository(RoleInterface::class)->findOneBy(array('id' => $user->role_hephaistos_questions_multi_canal));
+        $role = $this->em->getRepository(RoleInterface::class)->findOneBy(array('id' => $user->role_id));
         if ($role instanceof RoleInterface){
           $foundUser = $this->em->getRepository(UserInterface::class)->findOneBy(array('id' => $user->id));
           if ($foundUser instanceof UserInterface) {
