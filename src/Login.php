@@ -62,9 +62,9 @@ class Login
           $userLogin = json_decode($response->getData());
 
           if ($userLogin != "") {
-            $user = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $userLogin));
-            if ($user instanceof UserInterface) {
-              return $user;
+            $userFound = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $userLogin));
+            if ($userFound instanceof UserInterface) {
+              return $userFound;
             }
           }
         }
