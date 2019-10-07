@@ -55,7 +55,7 @@ class Login
       $user = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $login));
       if ($user instanceof UserInterface){
         // on check par API
-        $url = '/connexion?login='.$login.'&password='.$password;
+        $url = '/connexion-v2?login='.$login.'&password='.$password;
         $response = $this->apiZeusCommunication->sendGetRequest($url);
 
         if ($response->getHttpCode() == 200) {
