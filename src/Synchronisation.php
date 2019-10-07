@@ -200,7 +200,7 @@ class Synchronisation
       foreach ($users as $user) {
         $role = $this->em->getRepository(RoleInterface::class)->findOneBy(array('id' => $user->role_id));
         if ($role instanceof RoleInterface){
-          $foundUser = $this->em->getRepository(UserInterface::class)->findOneBy(array('id' => $user->id));
+          $foundUser = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $user->login));
           if ($foundUser instanceof UserInterface) {
             $foundUser->setNom($user->nom);
             $foundUser->setPrenom($user->prenom);
@@ -215,7 +215,6 @@ class Synchronisation
             $className = $this->em->getRepository(UserInterface::class)->getClassName();
             $newUser = new $className();
             if ($newUser instanceof UserInterface){
-              $newUser->setId($user->id);
               $newUser->setNom($user->nom);
               $newUser->setPrenom($user->prenom);
               $newUser->setLogin($user->login);
