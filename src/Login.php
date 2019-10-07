@@ -59,10 +59,10 @@ class Login
         $response = $this->apiZeusCommunication->sendGetRequest($url);
 
         if ($response->getHttpCode() == 200) {
-          $userId = json_decode($response->getData());
+          $userLogin = json_decode($response->getData());
 
-          if (intval($userId)) {
-            $user = $this->em->getRepository(UserInterface::class)->findOneBy(array('id' => $userId));
+          if ($userLogin != "") {
+            $user = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $userLogin));
             if ($user instanceof UserInterface) {
               return $user;
             }
