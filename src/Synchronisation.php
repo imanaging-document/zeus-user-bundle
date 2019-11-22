@@ -108,6 +108,12 @@ class Synchronisation
       $this->em->flush();
 
       foreach ($modulesExistants as $module) {
+        foreach ($module->getEnfants() as $sousModule){
+          $sousModule->setParent(null);
+          $this->em->persist($sousModule);
+          $nbModuleDeleted++;
+        }
+        $this->em->flush();
         // on supprime les liaisons avec les roles
         $module->setRoles(new ArrayCollection());
         $this->em->persist($module);
