@@ -34,6 +34,10 @@ interface UserInterface extends UserInterfaceAlias
 
   public function setUtilisateurZeus(bool $utilisateurZeus): void;
 
+  public function isUtilisateurCore(): bool;
+
+  public function setUtilisateurCore(bool $utilisateurZeus): void;
+
   public function getMail();
 
   public function setMail($mail);

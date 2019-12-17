@@ -11,6 +11,7 @@ namespace Imanaging\ZeusUserBundle;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Imanaging\ApiCommunicationBundle\ApiCoreCommunication;
 use Imanaging\ApiCommunicationBundle\ApiZeusCommunication;
 use Imanaging\ZeusUserBundle\Interfaces\ConnexionInterface;
 use Imanaging\ZeusUserBundle\Interfaces\ConnexionStatutInterface;
@@ -21,16 +22,19 @@ class Login
 {
   private $em;
   private $apiZeusCommunication;
+  private $apiCoreCommunication;
   private $encoder;
 
   /**
    * @param EntityManagerInterface $em
    * @param ApiZeusCommunication $apiZeusCommunication
    * @param UserPasswordEncoderInterface $encoder
+   * @param ApiCoreCommunication $apiCoreCommunication
    */
-  public function __construct(EntityManagerInterface $em, ApiZeusCommunication $apiZeusCommunication, UserPasswordEncoderInterface $encoder){
+  public function __construct(EntityManagerInterface $em, ApiZeusCommunication $apiZeusCommunication, UserPasswordEncoderInterface $encoder, ApiCoreCommunication $apiCoreCommunication){
     $this->em = $em;
     $this->apiZeusCommunication = $apiZeusCommunication;
+    $this->apiCoreCommunication = $apiCoreCommunication;
     $this->encoder = $encoder;
   }
   
@@ -43,17 +47,9 @@ class Login
    */
   public function canLog($login, $password, $ipAddress = null){
     // on vérifie dans la base local si le user existe, sinon on check sur ZEUS
-    $user = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $login, 'utilisateurZeus' => false));
+    $user = $this->em->getRepository(UserInterface::class)->findOneBy(['login' => $login]);
     if ($user instanceof UserInterface){
-      if ($this->encoder->isPasswordValid($user, $password)){
-        return $user;
-      } else {
-        $this->createConnexion('mdp_incorrect', $user, $user->getLogin(), $ipAddress);
-        return false;
-      }
-    } else {
-      $user = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $login));
-      if ($user instanceof UserInterface){
+      if ($user->isUtilisateurZeus()) {
         // on check par API
         $url = '/connexion-v2?login='.$login.'&password='.$password;
         $response = $this->apiZeusCommunication->sendGetRequest($url);
@@ -69,9 +65,27 @@ class Login
           }
         }
         $this->createConnexion($user, $user->getLogin(), 'mdp_incorrect', $ipAddress);
+      } elseif ($user->isUtilisateurCore()){
+        // on check par API sur le CORE
+        $now = new DateTime();
+        $nowFormat = $now->format('YmdHis');
+        $tokenFormatted = hash('sha256', $this->apiCoreCommunication->getApiCoreToken());
+
+        $url = '/can-log?token='.$tokenFormatted.'&token_date'.$nowFormat.'&login='.$login.'&password='.$password;
+        $response = $this->apiCoreCommunication->sendGetRequest($url);
+        if ($response->getHttpCode() == 200) {
+          return $user;
+        }
+        $this->createConnexion($user, $user->getLogin(), 'mdp_incorrect', $ipAddress);
       } else {
-        $this->createConnexion($user, $login, 'compte_inexistant', $ipAddress);
+        if ($this->encoder->isPasswordValid($user, $password)){
+          return $user;
+        } else {
+          $this->createConnexion('mdp_incorrect', $user, $user->getLogin(), $ipAddress);
+        }
       }
+    } else {
+      $this->createConnexion($user, $login, 'compte_inexistant', $ipAddress);
     }
     return false;
   }
