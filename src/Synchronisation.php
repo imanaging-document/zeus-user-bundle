@@ -284,7 +284,7 @@ class Synchronisation
 
           // on ajoute les destinataires
           $destinatairesMail = array();
-          foreach ($alerte->destinataires as $destinataire) {
+          foreach ($alerte->utilisateurs as $destinataire) {
             $foundUser = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $destinataire->login));
             if ($foundUser instanceof UserInterface) {
               $destinataireFound = $this->em->getRepository(DestinataireMailInterface::class)->findOneBy(array('user' => $foundUser));
