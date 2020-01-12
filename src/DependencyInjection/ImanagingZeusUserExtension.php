@@ -27,6 +27,7 @@ class ImanagingZeusUserExtension extends Extension
     $definition = $container->getDefinition('imanaging_zeus_user.synchronisation');
     $definition->setArgument(2, $config['api_get_modules_path']);
     $definition->setArgument(3, $config['api_get_roles_path']);
+    $definition->setArgument(4, $config['api_get_alertes_path']);
   }
 
   public function getAlias()

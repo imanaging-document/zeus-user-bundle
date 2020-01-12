@@ -16,6 +16,7 @@
             <argument type="service" id="imanaging_api_communication.api_zeus_communication" />
             <argument />
             <argument />
+            <argument />
         </service>
 
         <service id="imanaging_zeus_user.connexion_controller" class="Imanaging\ZeusUserBundle\Controller\ConnexionController" public="true">

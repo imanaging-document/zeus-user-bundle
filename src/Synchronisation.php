@@ -11,6 +11,8 @@ namespace Imanaging\ZeusUserBundle;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Imanaging\ApiCommunicationBundle\ApiZeusCommunication;
+use Imanaging\ZeusUserBundle\Interfaces\AlerteMailInterface;
+use Imanaging\ZeusUserBundle\Interfaces\DestinataireMailInterface;
 use Imanaging\ZeusUserBundle\Interfaces\ModuleInterface;
 use Imanaging\ZeusUserBundle\Interfaces\RoleInterface;
 use Imanaging\ZeusUserBundle\Interfaces\UserInterface;
@@ -21,18 +23,21 @@ class Synchronisation
   private $apiZeusCommunicationService;
   private $apiGetModulesPath;
   private $apiGetRolesPath;
+  private $apiGetAlertesPath;
 
   /**
    * @param EntityManagerInterface $em
    * @param ApiZeusCommunication $communicationService
    * @param $apiGetModulesPath
    * @param $apiGetRolesPath
+   * @param $apiGetAlertesPath
    */
-  public function __construct(EntityManagerInterface $em, ApiZeusCommunication $communicationService, $apiGetModulesPath, $apiGetRolesPath){
+  public function __construct(EntityManagerInterface $em, ApiZeusCommunication $communicationService, $apiGetModulesPath, $apiGetRolesPath, $apiGetAlertesPath){
     $this->em = $em;
     $this->apiZeusCommunicationService = $communicationService;
     $this->apiGetModulesPath = $apiGetModulesPath;
     $this->apiGetRolesPath = $apiGetRolesPath;
+    $this->apiGetAlertesPath = $apiGetAlertesPath;
   }
 
   /**
@@ -240,6 +245,69 @@ class Synchronisation
       return array(
         'nb_user_updated' => $nbUserUpdated,
         'nb_user_added' => $nbUserAdded
+      );
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * @return mixed
+   */
+  public function synchroniserAlertes(){
+    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
+    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
+
+    $url = $this->apiGetAlertesPath.'?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
+    $response = $this->apiZeusCommunicationService->sendGetRequest($url);
+
+    if ($response->getHttpCode() === 200) {
+      $nbAlertesMailUpdated = 0;
+      $nbAlertesMailAdded = 0;
+      // récupération de tous les roles
+      $alertes = json_decode($response->getData());
+
+      foreach ($alertes as $alerte) {
+        // on récupère ou créé l'alerte
+        if ($alerte->type == 'mail') {
+          $alerteFound = $this->em->getRepository(AlerteMailInterface::class)->findOneBy(array('code' => $alerte->code));
+          if (!($alerteFound instanceof AlerteMailInterface)) {
+            $classAlerteMailName = $this->em->getRepository(AlerteMailInterface::class)->getClassName();
+            $alerteFound = new $classAlerteMailName();
+            $alerteFound->setCode($alerte->code);
+            $nbAlertesMailAdded++;
+          }else {
+            $nbAlertesMailUpdated++;
+          }
+          $alerteFound->setLibelle($alerte->libelle);
+          $this->em->persist($alerteFound);
+
+          // on ajoute les destinataires
+          $destinatairesMail = array();
+          foreach ($alerte->destinataires as $destinataire) {
+            $foundUser = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $destinataire->login));
+            if ($foundUser instanceof UserInterface) {
+              $destinataireFound = $this->em->getRepository(DestinataireMailInterface::class)->findOneBy(array('user' => $foundUser));
+              if (!($destinataireFound instanceof DestinataireMailInterface)) {
+                $classDestinataireMailName = $this->em->getRepository(DestinataireMailInterface::class)->getClassName();
+                $destinataireFound = new $classDestinataireMailName();
+                $destinataireFound->setUser($foundUser);
+              }
+              $this->em->persist($destinataireFound);
+              // si le module a été trouvé, on l'ajoute à la liste des modules
+              array_push($destinatairesMail, $destinataireFound);
+            }
+          }
+
+          $alerteFound->setDestinataires($destinatairesMail);
+          $this->em->persist($alerteFound);
+        }
+      }
+      $this->em->flush();
+
+      return array(
+        'nb_alertes_mail_updated' => $nbAlertesMailUpdated,
+        'nb_alertes_mail_added' => $nbAlertesMailAdded
       );
     } else {
       return false;
