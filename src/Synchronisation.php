@@ -292,10 +292,14 @@ class Synchronisation
                 $classDestinataireMailName = $this->em->getRepository(DestinataireMailInterface::class)->getClassName();
                 $destinataireFound = new $classDestinataireMailName();
                 $destinataireFound->setUser($foundUser);
+                $this->em->persist($destinataireFound);
+                $this->em->flush();
               }
+              $destinataireFound->addAlerteMail($alerteFound);
               $this->em->persist($destinataireFound);
               // si le module a été trouvé, on l'ajoute à la liste des modules
               array_push($destinatairesMail, $destinataireFound);
+
             }
           }
 

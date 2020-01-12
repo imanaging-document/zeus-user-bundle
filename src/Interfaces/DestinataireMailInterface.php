@@ -11,13 +11,13 @@ interface DestinataireMailInterface
 
   public function setUser(UserInterface $user);
 
-  public function getUser(UserInterface $user);
+  public function getUser();
 
   public function addAlerteMail(AlerteMailInterface $alerteMail);
 
   public function removeAlerteMail(AlerteMailInterface $alerteMail);
 
-  public function setAlertesMail();
+  public function setAlertesMail($alertes);
 
   public function getAlertesMail();
 }
