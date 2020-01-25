@@ -24,4 +24,12 @@ interface RoleInterface
   public function getModules();
 
   public function setModules($modules);
+
+  public function getFonctions();
+
+  public function setFonctions($fonctions);
+
+  public function getNotifications();
+
+  public function setNotifications($notifications);
 }

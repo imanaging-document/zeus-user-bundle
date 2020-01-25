@@ -13,7 +13,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Imanaging\ApiCommunicationBundle\ApiZeusCommunication;
 use Imanaging\ZeusUserBundle\Interfaces\AlerteMailInterface;
 use Imanaging\ZeusUserBundle\Interfaces\DestinataireMailInterface;
+use Imanaging\ZeusUserBundle\Interfaces\FonctionInterface;
 use Imanaging\ZeusUserBundle\Interfaces\ModuleInterface;
+use Imanaging\ZeusUserBundle\Interfaces\NotificationInterface;
 use Imanaging\ZeusUserBundle\Interfaces\RoleInterface;
 use Imanaging\ZeusUserBundle\Interfaces\UserInterface;
 
@@ -24,6 +26,7 @@ class Synchronisation
   private $apiGetModulesPath;
   private $apiGetRolesPath;
   private $apiGetAlertesPath;
+  private $apiGetFonctionsPath;
 
   /**
    * @param EntityManagerInterface $em
@@ -31,13 +34,15 @@ class Synchronisation
    * @param $apiGetModulesPath
    * @param $apiGetRolesPath
    * @param $apiGetAlertesPath
+   * @param $apiGetFonctionsPath
    */
-  public function __construct(EntityManagerInterface $em, ApiZeusCommunication $communicationService, $apiGetModulesPath, $apiGetRolesPath, $apiGetAlertesPath){
+  public function __construct(EntityManagerInterface $em, ApiZeusCommunication $communicationService, $apiGetModulesPath, $apiGetRolesPath, $apiGetAlertesPath, $apiGetFonctionsPath){
     $this->em = $em;
     $this->apiZeusCommunicationService = $communicationService;
     $this->apiGetModulesPath = $apiGetModulesPath;
     $this->apiGetRolesPath = $apiGetRolesPath;
     $this->apiGetAlertesPath = $apiGetAlertesPath;
+    $this->apiGetFonctionsPath = $apiGetFonctionsPath;
   }
 
   /**
@@ -139,6 +144,71 @@ class Synchronisation
   /**
    * @return mixed
    */
+  public function synchroniserFonctions(){
+    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
+    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
+
+    $url = $this->apiGetFonctionsPath.'?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
+    $response = $this->apiZeusCommunicationService->sendGetRequest($url);
+
+
+    if ($response->getHttpCode() === 200){
+      // on gère la suppression de modules
+      $fonctionsExistants = $this->em->getRepository(FonctionInterface::class)->findAll();
+
+      $nbFonctionDeleted = 0;
+      $nbFonctionUpdated = 0;
+      $nbFonctionAdded = 0;
+      // récupération de tous les modules
+      $fonctions = json_decode($response->getData());
+
+      // ON CHARGE TOUS LES MODULES SANS LES PARENTS
+      foreach ($fonctions as $fonction){
+        $foundFonction = $this->em->getRepository(FonctionInterface::class)->findOneBy(array('code' => $fonction->code));
+        if ($foundFonction instanceof FonctionInterface) {
+          $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $fonction->module_code));
+          $foundFonction->setLibelle($fonction->libelle);
+          $foundFonction->setModule($module);
+          $this->em->persist($foundFonction);
+          $nbFonctionUpdated++;
+
+          // on supprime du tableaux des modules existants
+          if (($key = array_search($foundFonction, $fonctionsExistants)) !== false) {
+            unset($fonctionsExistants[$key]);
+          }
+        } else {
+          $className = $this->em->getRepository(FonctionInterface::class)->getClassName();
+          $newFonction = new $className();
+          if ($newFonction instanceof FonctionInterface){
+            $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $fonction->module_code));
+            $newFonction->setCode($fonction->code);
+            $newFonction->setLibelle($fonction->libelle);
+            $newFonction->setModule($module);
+            $this->em->persist($newFonction);
+            $nbFonctionAdded++;
+          }
+        }
+      }
+      $this->em->flush();
+
+      foreach ($fonctionsExistants as $fonction) {
+        $this->em->remove($fonction);
+        $nbFonctionDeleted++;
+      }
+
+      return array(
+        'nb_fonction_updated' => $nbFonctionUpdated,
+        'nb_fonction_added' => $nbFonctionAdded,
+        'nb_fonction_deleted' => $nbFonctionDeleted
+      );
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * @return mixed
+   */
   public function synchroniserRoles(){
     $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
     $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
@@ -162,10 +232,30 @@ class Synchronisation
             array_push($modules, $foundModule);
           }
         }
+        // On récupère toutes les fonctions auxquelles ce role est lié
+        $fonctions = array();
+        foreach ($role->fonctions as $fonction) {
+          $foundFonction = $this->em->getRepository(FonctionInterface::class)->findOneBy(array('code' => $fonction->code));
+          if ($foundFonction instanceof FonctionInterface) {
+            // si le module a été trouvé, on l'ajoute à la liste des modules
+            array_push($fonctions, $foundFonction);
+          }
+        }
+        // On récupère toutes les notifications auxquelles ce role est lié
+        $notifications = array();
+        foreach ($role->notifications as $notification) {
+          $foundNotification = $this->em->getRepository(NotificationInterface::class)->findOneBy(array('code' => $notification->code));
+          if ($foundNotification instanceof NotificationInterface) {
+            // si le module a été trouvé, on l'ajoute à la liste des modules
+            array_push($notifications, $foundNotification);
+          }
+        }
         $foundRole = $this->em->getRepository(RoleInterface::class)->findOneBy(array('id' => $role->id));
         if ($foundRole instanceof RoleInterface) {
           $foundRole->setLibelle($role->libelle);
           $foundRole->setModules($modules);
+          $foundRole->setFonctions($fonctions);
+          $foundRole->setNotifications($notifications);
           $this->em->persist($foundRole);
           $nbRoleUpdated++;
         } else {
@@ -175,6 +265,8 @@ class Synchronisation
             $newRole->setId($role->id);
             $newRole->setLibelle($role->libelle);
             $newRole->setModules($modules);
+            $newRole->setFonctions($fonctions);
+            $newRole->setNotifications($notifications);
             $this->em->persist($newRole);
             $nbRoleAdded++;
           }
