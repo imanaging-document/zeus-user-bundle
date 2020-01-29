@@ -361,43 +361,41 @@ class Synchronisation
 
       foreach ($alertes as $alerte) {
         // on récupère ou créé l'alerte
-        if ($alerte->type == 'mail') {
-          $alerteFound = $this->em->getRepository(AlerteMailInterface::class)->findOneBy(array('code' => $alerte->code));
-          if (!($alerteFound instanceof AlerteMailInterface)) {
-            $classAlerteMailName = $this->em->getRepository(AlerteMailInterface::class)->getClassName();
-            $alerteFound = new $classAlerteMailName();
-            $alerteFound->setCode($alerte->code);
-            $nbAlertesMailAdded++;
-          }else {
-            $nbAlertesMailUpdated++;
-          }
-          $alerteFound->setLibelle($alerte->libelle);
-          $this->em->persist($alerteFound);
-
-          // on ajoute les destinataires
-          $destinatairesMail = array();
-          foreach ($alerte->utilisateurs as $destinataire) {
-            $foundUser = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $destinataire->login));
-            if ($foundUser instanceof UserInterface) {
-              $destinataireFound = $this->em->getRepository(DestinataireMailInterface::class)->findOneBy(array('user' => $foundUser));
-              if (!($destinataireFound instanceof DestinataireMailInterface)) {
-                $classDestinataireMailName = $this->em->getRepository(DestinataireMailInterface::class)->getClassName();
-                $destinataireFound = new $classDestinataireMailName();
-                $destinataireFound->setUser($foundUser);
-                $this->em->persist($destinataireFound);
-                $this->em->flush();
-              }
-              $destinataireFound->addAlerteMail($alerteFound);
-              $this->em->persist($destinataireFound);
-              // si le module a été trouvé, on l'ajoute à la liste des modules
-              array_push($destinatairesMail, $destinataireFound);
-
-            }
-          }
-
-          $alerteFound->setDestinataires($destinatairesMail);
-          $this->em->persist($alerteFound);
+        $alerteFound = $this->em->getRepository(AlerteMailInterface::class)->findOneBy(array('code' => $alerte->code));
+        if (!($alerteFound instanceof AlerteMailInterface)) {
+          $classAlerteMailName = $this->em->getRepository(AlerteMailInterface::class)->getClassName();
+          $alerteFound = new $classAlerteMailName();
+          $alerteFound->setCode($alerte->code);
+          $nbAlertesMailAdded++;
+        }else {
+          $nbAlertesMailUpdated++;
         }
+        $alerteFound->setLibelle($alerte->libelle);
+        $this->em->persist($alerteFound);
+
+        // on ajoute les destinataires
+        $destinatairesMail = array();
+        foreach ($alerte->utilisateurs as $destinataire) {
+          $foundUser = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $destinataire->login));
+          if ($foundUser instanceof UserInterface) {
+            $destinataireFound = $this->em->getRepository(DestinataireMailInterface::class)->findOneBy(array('user' => $foundUser));
+            if (!($destinataireFound instanceof DestinataireMailInterface)) {
+              $classDestinataireMailName = $this->em->getRepository(DestinataireMailInterface::class)->getClassName();
+              $destinataireFound = new $classDestinataireMailName();
+              $destinataireFound->setUser($foundUser);
+              $this->em->persist($destinataireFound);
+              $this->em->flush();
+            }
+            $destinataireFound->addAlerteMail($alerteFound);
+            $this->em->persist($destinataireFound);
+            // si le module a été trouvé, on l'ajoute à la liste des modules
+            array_push($destinatairesMail, $destinataireFound);
+
+          }
+        }
+
+        $alerteFound->setDestinataires($destinatairesMail);
+        $this->em->persist($alerteFound);
       }
       $this->em->flush();
 
