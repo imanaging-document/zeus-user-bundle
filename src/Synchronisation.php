@@ -27,6 +27,7 @@ class Synchronisation
   private $apiGetRolesPath;
   private $apiGetAlertesPath;
   private $apiGetFonctionsPath;
+  private $apiGetNotificationsPath;
 
   /**
    * @param EntityManagerInterface $em
@@ -36,13 +37,15 @@ class Synchronisation
    * @param $apiGetAlertesPath
    * @param $apiGetFonctionsPath
    */
-  public function __construct(EntityManagerInterface $em, ApiZeusCommunication $communicationService, $apiGetModulesPath, $apiGetRolesPath, $apiGetAlertesPath, $apiGetFonctionsPath){
+  public function __construct(EntityManagerInterface $em, ApiZeusCommunication $communicationService,
+                              $apiGetModulesPath, $apiGetRolesPath, $apiGetAlertesPath, $apiGetFonctionsPath, $apiGetNotificationsPath){
     $this->em = $em;
     $this->apiZeusCommunicationService = $communicationService;
     $this->apiGetModulesPath = $apiGetModulesPath;
     $this->apiGetRolesPath = $apiGetRolesPath;
     $this->apiGetAlertesPath = $apiGetAlertesPath;
     $this->apiGetFonctionsPath = $apiGetFonctionsPath;
+    $this->apiGetNotificationsPath = $apiGetNotificationsPath;
   }
 
   /**
@@ -361,49 +364,89 @@ class Synchronisation
 
       foreach ($alertes as $alerte) {
         // on récupère ou créé l'alerte
-        if ($alerte->type == 'mail') {
-          $alerteFound = $this->em->getRepository(AlerteMailInterface::class)->findOneBy(array('code' => $alerte->code));
-          if (!($alerteFound instanceof AlerteMailInterface)) {
-            $classAlerteMailName = $this->em->getRepository(AlerteMailInterface::class)->getClassName();
-            $alerteFound = new $classAlerteMailName();
-            $alerteFound->setCode($alerte->code);
-            $nbAlertesMailAdded++;
-          }else {
-            $nbAlertesMailUpdated++;
-          }
-          $alerteFound->setLibelle($alerte->libelle);
-          $this->em->persist($alerteFound);
-
-          // on ajoute les destinataires
-          $destinatairesMail = array();
-          foreach ($alerte->utilisateurs as $destinataire) {
-            $foundUser = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $destinataire->login));
-            if ($foundUser instanceof UserInterface) {
-              $destinataireFound = $this->em->getRepository(DestinataireMailInterface::class)->findOneBy(array('user' => $foundUser));
-              if (!($destinataireFound instanceof DestinataireMailInterface)) {
-                $classDestinataireMailName = $this->em->getRepository(DestinataireMailInterface::class)->getClassName();
-                $destinataireFound = new $classDestinataireMailName();
-                $destinataireFound->setUser($foundUser);
-                $this->em->persist($destinataireFound);
-                $this->em->flush();
-              }
-              $destinataireFound->addAlerteMail($alerteFound);
-              $this->em->persist($destinataireFound);
-              // si le module a été trouvé, on l'ajoute à la liste des modules
-              array_push($destinatairesMail, $destinataireFound);
-
-            }
-          }
-
-          $alerteFound->setDestinataires($destinatairesMail);
-          $this->em->persist($alerteFound);
+        $alerteFound = $this->em->getRepository(AlerteMailInterface::class)->findOneBy(array('code' => $alerte->code));
+        if (!($alerteFound instanceof AlerteMailInterface)) {
+          $classAlerteMailName = $this->em->getRepository(AlerteMailInterface::class)->getClassName();
+          $alerteFound = new $classAlerteMailName();
+          $alerteFound->setCode($alerte->code);
+          $nbAlertesMailAdded++;
+        }else {
+          $nbAlertesMailUpdated++;
         }
+        $alerteFound->setLibelle($alerte->libelle);
+        $this->em->persist($alerteFound);
+
+        // on ajoute les destinataires
+        $destinatairesMail = array();
+        foreach ($alerte->utilisateurs as $destinataire) {
+          $foundUser = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $destinataire->login));
+          if ($foundUser instanceof UserInterface) {
+            $destinataireFound = $this->em->getRepository(DestinataireMailInterface::class)->findOneBy(array('user' => $foundUser));
+            if (!($destinataireFound instanceof DestinataireMailInterface)) {
+              $classDestinataireMailName = $this->em->getRepository(DestinataireMailInterface::class)->getClassName();
+              $destinataireFound = new $classDestinataireMailName();
+              $destinataireFound->setUser($foundUser);
+              $this->em->persist($destinataireFound);
+              $this->em->flush();
+            }
+            $destinataireFound->addAlerteMail($alerteFound);
+            $this->em->persist($destinataireFound);
+            // si le module a été trouvé, on l'ajoute à la liste des modules
+            array_push($destinatairesMail, $destinataireFound);
+
+          }
+        }
+
+        $alerteFound->setDestinataires($destinatairesMail);
+        $this->em->persist($alerteFound);
       }
       $this->em->flush();
 
       return array(
         'nb_alertes_mail_updated' => $nbAlertesMailUpdated,
         'nb_alertes_mail_added' => $nbAlertesMailAdded
+      );
+    } else {
+      return false;
+    }
+  }
+
+
+  /**
+   * @return mixed
+   */
+  public function synchroniserNotifications(){
+    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
+    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
+
+    $url = $this->apiGetNotificationsPath.'?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
+    $response = $this->apiZeusCommunicationService->sendGetRequest($url);
+
+    if ($response->getHttpCode() === 200) {
+      $nbNotificationUpdated = 0;
+      $nbNotificationAdded = 0;
+      // récupération de tous les roles
+      $notifications = json_decode($response->getData());
+
+      foreach ($notifications as $notification) {
+        // on récupère ou créé l'alerte
+        $notificationFound = $this->em->getRepository(NotificationInterface::class)->findOneBy(array('code' => $notification->code));
+        if (!($notificationFound instanceof NotificationInterface)) {
+          $classNotificationName = $this->em->getRepository(NotificationInterface::class)->getClassName();
+          $notificationFound = new $classNotificationName();
+          $notificationFound->setCode($notification->code);
+          $nbNotificationAdded++;
+        }else {
+          $nbNotificationUpdated++;
+        }
+        $notificationFound->setLibelle($notification->libelle);
+        $this->em->persist($notificationFound);
+      }
+      $this->em->flush();
+
+      return array(
+        'nb_notifications_updated' => $nbNotificationUpdated,
+        'nb_notifications_added' => $nbNotificationAdded
       );
     } else {
       return false;

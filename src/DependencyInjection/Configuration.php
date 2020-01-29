@@ -19,6 +19,7 @@ class Configuration implements ConfigurationInterface
         ->variableNode('api_get_roles_path')->defaultValue("")->end()
         ->variableNode('api_get_alertes_path')->defaultValue("")->end()
         ->variableNode('api_get_fonctions_path')->defaultValue("")->end()
+        ->variableNode('api_get_notifications_path')->defaultValue("")->end()
       ->end()
     ;
 

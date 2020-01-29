@@ -29,6 +29,7 @@ class ImanagingZeusUserExtension extends Extension
     $definition->setArgument(3, $config['api_get_roles_path']);
     $definition->setArgument(4, $config['api_get_alertes_path']);
     $definition->setArgument(5, $config['api_get_fonctions_path']);
+    $definition->setArgument(6, $config['api_get_notifications_path']);
   }
 
   public function getAlias()

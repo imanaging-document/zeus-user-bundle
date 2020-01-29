@@ -18,6 +18,7 @@
             <argument />
             <argument />
             <argument />
+            <argument />
         </service>
 
         <service id="imanaging_zeus_user.connexion_controller" class="Imanaging\ZeusUserBundle\Controller\ConnexionController" public="true">
