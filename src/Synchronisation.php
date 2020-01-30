@@ -169,7 +169,11 @@ class Synchronisation
       foreach ($fonctions as $fonction){
         $foundFonction = $this->em->getRepository(FonctionInterface::class)->findOneBy(array('code' => $fonction->code));
         if ($foundFonction instanceof FonctionInterface) {
-          $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $fonction->module_code));
+          if (isset($fonction->module_code)){
+            $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $fonction->module_code));
+          } else {
+            $module = null;
+          }
           $foundFonction->setLibelle($fonction->libelle);
           $foundFonction->setModule($module);
           $this->em->persist($foundFonction);
@@ -183,7 +187,11 @@ class Synchronisation
           $className = $this->em->getRepository(FonctionInterface::class)->getClassName();
           $newFonction = new $className();
           if ($newFonction instanceof FonctionInterface){
-            $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $fonction->module_code));
+            if (isset($fonction->module_code)){
+              $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $fonction->module_code));
+            } else {
+              $module = null;
+            }
             $newFonction->setCode($fonction->code);
             $newFonction->setLibelle($fonction->libelle);
             $newFonction->setModule($module);
