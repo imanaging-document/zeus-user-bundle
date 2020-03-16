@@ -52,7 +52,9 @@ class Login
     if ($user instanceof UserInterface){
       if ($user->isUtilisateurZeus()) {
         // on check par API
-        $url = '/connexion-v2?login='.$login.'&password='.$password;
+        $typeApplication = getenv('TYPE_APPLICATION');
+        $clientTraitementId = getenv('CLIENT_TRAITEMENT');
+        $url = '/connexion-v2?login='.$login.'&password='.$password.'&type_application='.$typeApplication.'&adress_ip='.$ipAddress.'&client_traitement_id='.$clientTraitementId;
         $response = $this->apiZeusCommunication->sendGetRequest($url);
 
         if ($response->getHttpCode() == 200) {
