@@ -48,4 +48,6 @@ interface ModuleInterface
   public function getRoles();
 
   public function setRoles($roles);
+
+  public function getFonctions();
 }
