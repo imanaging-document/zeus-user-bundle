@@ -32,4 +32,8 @@ interface RoleInterface
   public function getNotifications();
 
   public function setNotifications($notifications);
+
+  public function canDo();
+
+  public function canAccess();
 }
