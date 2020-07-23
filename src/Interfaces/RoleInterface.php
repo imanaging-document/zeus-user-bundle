@@ -33,7 +33,7 @@ interface RoleInterface
 
   public function setNotifications($notifications);
 
-  public function canDo();
+  public function canDo($codeFonction);
 
-  public function canAccess();
+  public function canAccess($moduleId);
 }
