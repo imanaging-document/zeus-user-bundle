@@ -50,4 +50,6 @@ interface ModuleInterface
   public function setRoles($roles);
 
   public function getFonctions();
+
+  public function setFonctions($fonctions);
 }
