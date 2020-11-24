@@ -17,9 +17,9 @@ interface RoleInterface
 
   public function setLibelle($libelle);
 
-  public function getUser();
+  public function isZeusOnly();
 
-  public function setUser($user);
+  public function setZeusOnly($zeusOnly);
 
   public function getModules();
 

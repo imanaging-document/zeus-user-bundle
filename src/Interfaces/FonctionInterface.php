@@ -17,6 +17,10 @@ interface FonctionInterface
 
   public function setLibelle($libelle);
 
+  public function isZeusOnly();
+
+  public function setZeusOnly($zeusOnly);
+
   public function getModule();
 
   public function setModule($module);

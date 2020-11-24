@@ -37,6 +37,18 @@ interface ModuleInterface
 
   public function setVisible($visible);
 
+  public function isZeusOnly();
+
+  public function setZeusOnly($zeusOnly);
+
+  public function getTypeApplication();
+
+  public function setTypeApplication($typeApplication);
+
+  public function getDataApplication();
+
+  public function setDataApplication($dataApplication);
+
   public function getEnfants();
 
   public function setEnfants($enfants);

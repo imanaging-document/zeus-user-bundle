@@ -17,6 +17,10 @@ interface NotificationInterface
 
   public function setLibelle($libelle);
 
+  public function isZeusOnly();
+
+  public function setZeusOnly($zeusOnly);
+
   public function getRoles();
 
   public function setRoles($roles);

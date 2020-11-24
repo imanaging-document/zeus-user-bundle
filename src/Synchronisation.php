@@ -17,6 +17,7 @@ use Imanaging\ZeusUserBundle\Interfaces\FonctionInterface;
 use Imanaging\ZeusUserBundle\Interfaces\ModuleInterface;
 use Imanaging\ZeusUserBundle\Interfaces\NotificationInterface;
 use Imanaging\ZeusUserBundle\Interfaces\RoleInterface;
+use Imanaging\ZeusUserBundle\Interfaces\RoleModuleInterface;
 use Imanaging\ZeusUserBundle\Interfaces\UserInterface;
 
 class Synchronisation
@@ -78,6 +79,9 @@ class Synchronisation
           $foundModule->setNiveau($module->niveau);
           $foundModule->setDroite($module->droite);
           $foundModule->setVisible($module->visible);
+          $foundModule->setZeusOnly($module->zeus_only);
+          $foundModule->setTypeApplication($module->type_application);
+          $foundModule->setDataApplication($module->data_application);
           $foundModule->setParent(null);
           $this->em->persist($foundModule);
           $nbModuleUpdated++;
@@ -97,6 +101,9 @@ class Synchronisation
             $newModule->setNiveau($module->niveau);
             $newModule->setDroite($module->droite);
             $newModule->setVisible($module->visible);
+            $newModule->setZeusOnly($module->zeus_only);
+            $newModule->setTypeApplication($module->type_application);
+            $newModule->setDataApplication($module->data_application);
             $newModule->setParent(null);
             $this->em->persist($newModule);
             $nbModuleAdded++;
@@ -175,6 +182,7 @@ class Synchronisation
             $module = null;
           }
           $foundFonction->setLibelle($fonction->libelle);
+          $foundFonction->setZeusOnly($fonction->zeus_only);
           $foundFonction->setModule($module);
           $this->em->persist($foundFonction);
           $nbFonctionUpdated++;
@@ -194,6 +202,7 @@ class Synchronisation
             }
             $newFonction->setCode($fonction->code);
             $newFonction->setLibelle($fonction->libelle);
+            $newFonction->setZeusOnly($fonction->zeus_only);
             $newFonction->setModule($module);
             $this->em->persist($newFonction);
             $nbFonctionAdded++;
@@ -233,19 +242,53 @@ class Synchronisation
       // récupération de tous les roles
       $roles = json_decode($response->getData());
 
-      foreach ($roles as $role) {
+      foreach ($roles as $_role) {
+        $role = $this->em->getRepository(RoleInterface::class)->findOneBy(array('id' => $_role->id));
+        if ($role instanceof RoleInterface) {
+          // Synchro ZEUS ==> ZEUS ONLY !
+          $role->setZeusOnly(true);
+          $role->setLibelle($_role->libelle);
+          $this->em->persist($role);
+          $nbRoleUpdated++;
+        } else {
+          $className = $this->em->getRepository(RoleInterface::class)->getClassName();
+          $role = new $className();
+          if ($role instanceof RoleInterface){
+            $role->setId($_role->id);
+            // Synchro ZEUS ==> ZEUS ONLY !
+            $role->setZeusOnly(true);
+            $role->setLibelle($_role->libelle);
+
+            $this->em->persist($role);
+            $nbRoleAdded++;
+          }
+        }
+
+        // On supprime tous les modules associés à ce role
+        foreach ($role->getModules() as $module) {
+          if ($module instanceof ModuleInterface) {
+            $this->em->remove($module);
+          }
+        }
+
         // On récupère tous les modules auxquels ce role est lié
-        $modules = array();
-        foreach ($role->modules as $module) {
-          $foundModule = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $module->code));
-          if ($foundModule instanceof ModuleInterface) {
-            // si le module a été trouvé, on l'ajoute à la liste des modules
-            array_push($modules, $foundModule);
+        foreach ($_role->modules as $_module) {
+          $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $_module->code));
+          if ($module instanceof ModuleInterface) {
+            $className = $this->em->getRepository(RoleModuleInterface::class)->getClassName();
+            $roleModule = new $className();
+            if ($roleModule instanceof RoleModuleInterface){
+              $roleModule->setRole($role);
+              $roleModule->setModule($module);
+              $roleModule->setLibelle($module->getLibelle());
+              $roleModule->setOrdre($module->getOrdre());
+              $this->em->persist($roleModule);
+            }
           }
         }
         // On récupère toutes les fonctions auxquelles ce role est lié
         $fonctions = array();
-        foreach ($role->fonctions as $fonction) {
+        foreach ($_role->fonctions as $fonction) {
           $foundFonction = $this->em->getRepository(FonctionInterface::class)->findOneBy(array('code' => $fonction->code));
           if ($foundFonction instanceof FonctionInterface) {
             // si le module a été trouvé, on l'ajoute à la liste des modules
@@ -254,34 +297,16 @@ class Synchronisation
         }
         // On récupère toutes les notifications auxquelles ce role est lié
         $notifications = array();
-        foreach ($role->notifications as $notification) {
+        foreach ($_role->notifications as $notification) {
           $foundNotification = $this->em->getRepository(NotificationInterface::class)->findOneBy(array('code' => $notification->code));
           if ($foundNotification instanceof NotificationInterface) {
             // si le module a été trouvé, on l'ajoute à la liste des modules
             array_push($notifications, $foundNotification);
           }
         }
-        $foundRole = $this->em->getRepository(RoleInterface::class)->findOneBy(array('id' => $role->id));
-        if ($foundRole instanceof RoleInterface) {
-          $foundRole->setLibelle($role->libelle);
-          $foundRole->setModules($modules);
-          $foundRole->setFonctions($fonctions);
-          $foundRole->setNotifications($notifications);
-          $this->em->persist($foundRole);
-          $nbRoleUpdated++;
-        } else {
-          $className = $this->em->getRepository(RoleInterface::class)->getClassName();
-          $newRole = new $className();
-          if ($newRole instanceof RoleInterface){
-            $newRole->setId($role->id);
-            $newRole->setLibelle($role->libelle);
-            $newRole->setModules($modules);
-            $newRole->setFonctions($fonctions);
-            $newRole->setNotifications($notifications);
-            $this->em->persist($newRole);
-            $nbRoleAdded++;
-          }
-        }
+
+        $role->setFonctions($fonctions);
+        $role->setNotifications($notifications);
       }
       $this->em->flush();
 
@@ -448,6 +473,7 @@ class Synchronisation
           $nbNotificationUpdated++;
         }
         $notificationFound->setLibelle($notification->libelle);
+        $notificationFound->setZeusOnly($notification->zeus_only);
         $this->em->persist($notificationFound);
       }
       $this->em->flush();
