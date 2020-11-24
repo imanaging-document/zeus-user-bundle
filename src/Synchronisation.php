@@ -266,7 +266,7 @@ class Synchronisation
 
         // On supprime tous les modules associés à ce role
         foreach ($role->getModules() as $module) {
-          if ($module instanceof ModuleInterface) {
+          if ($module instanceof RoleModuleInterface) {
             $this->em->remove($module);
           }
         }
