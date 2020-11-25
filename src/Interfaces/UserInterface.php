@@ -30,6 +30,10 @@ interface UserInterface extends UserInterfaceAlias
 
   public function setPassword(string $password): void;
 
+  public function isActif(): bool;
+
+  public function setActif(bool $actif): void;
+
   public function isUtilisateurZeus(): bool;
 
   public function setUtilisateurZeus(bool $utilisateurZeus): void;
