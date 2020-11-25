@@ -13,6 +13,10 @@ interface RoleInterface
 
   public function setId($id);
 
+  public function getCode();
+
+  public function setCode($code);
+
   public function getLibelle();
 
   public function setLibelle($libelle);
@@ -20,6 +24,10 @@ interface RoleInterface
   public function isZeusOnly();
 
   public function setZeusOnly($zeusOnly);
+
+  public function isParDefaut();
+
+  public function setParDefaut($parDefaut);
 
   public function getModules();
 

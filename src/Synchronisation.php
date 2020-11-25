@@ -243,26 +243,22 @@ class Synchronisation
       $roles = json_decode($response->getData());
 
       foreach ($roles as $_role) {
-        $role = $this->em->getRepository(RoleInterface::class)->findOneBy(array('id' => $_role->id));
+        $role = $this->em->getRepository(RoleInterface::class)->findOneBy(['code' => $_role->code]);
         if ($role instanceof RoleInterface) {
-          // Synchro ZEUS ==> ZEUS ONLY !
-          $role->setZeusOnly(true);
-          $role->setLibelle($_role->libelle);
-          $this->em->persist($role);
           $nbRoleUpdated++;
         } else {
           $className = $this->em->getRepository(RoleInterface::class)->getClassName();
           $role = new $className();
           if ($role instanceof RoleInterface){
-            $role->setId($_role->id);
+            $role->setCode($_role->code);
             // Synchro ZEUS ==> ZEUS ONLY !
-            $role->setZeusOnly(true);
-            $role->setLibelle($_role->libelle);
-
-            $this->em->persist($role);
             $nbRoleAdded++;
           }
         }
+        $role->setZeusOnly(true);
+        $role->setParDefaut($_role->par_defaut);
+        $role->setLibelle($_role->libelle);
+        $this->em->persist($role);
 
         // On supprime tous les modules associés à ce role
         foreach ($role->getModules() as $module) {
