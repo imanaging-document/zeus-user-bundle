@@ -332,44 +332,35 @@ class Synchronisation
       // récupération de tous les roles
       $decodedResponse = json_decode($response->getData());
       $users = $decodedResponse->users;
-      foreach ($users as $user) {
-        $role = $this->em->getRepository(RoleInterface::class)->findOneBy(array('id' => $user->role_id));
+      foreach ($users as $_user) {
+        $role = $this->em->getRepository(RoleInterface::class)->findOneBy(['code' => $_user->role_code]);
         if ($role instanceof RoleInterface){
-          $foundUser = $this->em->getRepository(UserInterface::class)->findOneBy(array('login' => $user->login));
-          if ($foundUser instanceof UserInterface) {
-            $foundUser->setNom($user->nom);
-            $foundUser->setPrenom($user->prenom);
-            $foundUser->setLogin($user->login);
-            $foundUser->setUsername($user->username);
-            $foundUser->setMail($user->mail);
-            $foundUser->setRole($role);
-            $foundUser->setUtilisateurZeus(true);
-            $this->em->persist($foundUser);
+          $user = $this->em->getRepository(UserInterface::class)->findOneBy(['login' => $_user->login]);
+          if ($user instanceof UserInterface) {
             $nbUserUpdated++;
           } else {
             $className = $this->em->getRepository(UserInterface::class)->getClassName();
-            $newUser = new $className();
-            if ($newUser instanceof UserInterface){
-              $newUser->setNom($user->nom);
-              $newUser->setPrenom($user->prenom);
-              $newUser->setLogin($user->login);
-              $newUser->setUsername($user->username);
-              $newUser->setMail($user->mail);
-              $newUser->setRole($role);
-              $newUser->setUtilisateurZeus(true);
-              $this->em->persist($newUser);
+            $user = new $className();
+            if ($user instanceof UserInterface){
+              $user->setLogin($_user->login);
               $nbUserAdded++;
             }
-
           }
+          $user->setNom($_user->nom);
+          $user->setPrenom($_user->prenom);
+          $user->setUsername($_user->username);
+          $user->setMail($_user->mail);
+          $user->setRole($role);
+          $user->setUtilisateurZeus(true);
+          $this->em->persist($user);
         }
       }
       $this->em->flush();
 
-      return array(
+      return [
         'nb_user_updated' => $nbUserUpdated,
         'nb_user_added' => $nbUserAdded
-      );
+      ];
     } else {
       return false;
     }
