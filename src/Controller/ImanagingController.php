@@ -6,6 +6,7 @@ namespace Imanaging\ZeusUserBundle\Controller;
 
 use Imanaging\ZeusUserBundle\Interfaces\ModuleInterface;
 use Imanaging\ZeusUserBundle\Interfaces\RoleInterface;
+use Imanaging\ZeusUserBundle\Interfaces\RoleModuleInterface;
 use Imanaging\ZeusUserBundle\Interfaces\UserInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -24,12 +25,10 @@ class ImanagingController extends AbstractController
       $role = $user->getRole();
       if ($role instanceof RoleInterface){
         // On récupère tous les modules du rôle
-        $modules = $role->getModules();
-
         $routes = array();
-        foreach ($modules as $module){
-          if ($module instanceof ModuleInterface){
-            array_push($routes, $module->getRoute());
+        foreach ($role->getModules() as $roleModule){
+          if ($roleModule instanceof RoleModuleInterface){
+            $routes[] = $roleModule->getModule()->getRoute();
           }
         }
         foreach ($modulesRoute as $moduleRoute){

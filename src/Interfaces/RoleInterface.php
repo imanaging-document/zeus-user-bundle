@@ -44,4 +44,8 @@ interface RoleInterface
   public function canDo($codeFonction);
 
   public function canAccess($moduleId);
+
+  public function getLibelleForModule($moduleId);
+
+  public function getOrdreForModule($moduleId);
 }
