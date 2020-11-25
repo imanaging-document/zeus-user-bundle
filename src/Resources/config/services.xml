@@ -10,6 +10,7 @@
             <argument type="service" id="imanaging_api_communication.api_zeus_communication" />
             <argument type="service" id="security.user_password_encoder.generic"/>
             <argument type="service" id="imanaging_api_communication.api_core_communication" />
+            <argument type="service" id="session" />
         </service>
         <service id="imanaging_zeus_user.synchronisation" class="Imanaging\ZeusUserBundle\Synchronisation">
             <argument type="service" id="doctrine.orm.default_entity_manager" />

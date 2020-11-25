@@ -11,12 +11,12 @@ namespace Imanaging\ZeusUserBundle;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use http\Client\Curl\User;
 use Imanaging\ApiCommunicationBundle\ApiCoreCommunication;
 use Imanaging\ApiCommunicationBundle\ApiZeusCommunication;
 use Imanaging\ZeusUserBundle\Interfaces\ConnexionInterface;
 use Imanaging\ZeusUserBundle\Interfaces\ConnexionStatutInterface;
 use Imanaging\ZeusUserBundle\Interfaces\UserInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class Login
@@ -25,18 +25,22 @@ class Login
   private $apiZeusCommunication;
   private $apiCoreCommunication;
   private $encoder;
+  private $session;
 
   /**
    * @param EntityManagerInterface $em
    * @param ApiZeusCommunication $apiZeusCommunication
    * @param UserPasswordEncoderInterface $encoder
    * @param ApiCoreCommunication $apiCoreCommunication
+   * @param SessionInterface $session
    */
-  public function __construct(EntityManagerInterface $em, ApiZeusCommunication $apiZeusCommunication, UserPasswordEncoderInterface $encoder, ApiCoreCommunication $apiCoreCommunication){
+  public function __construct(EntityManagerInterface $em, ApiZeusCommunication $apiZeusCommunication,
+                              UserPasswordEncoderInterface $encoder, ApiCoreCommunication $apiCoreCommunication, SessionInterface $session){
     $this->em = $em;
     $this->apiZeusCommunication = $apiZeusCommunication;
     $this->apiCoreCommunication = $apiCoreCommunication;
     $this->encoder = $encoder;
+    $this->session = $session;
   }
   
   /**
@@ -47,6 +51,10 @@ class Login
    * @throws Exception
    */
   public function canLog($login, $password, $ipAddress = null){
+    // on supprime le cache du menu
+    $this->session->remove('menu_0');
+    $this->session->remove('menu_1');
+
     // on vérifie dans la base local si le user existe, sinon on check sur ZEUS
     $user = $this->em->getRepository(UserInterface::class)->findOneBy(['login' => $login]);
     if ($user instanceof UserInterface){
@@ -95,6 +103,10 @@ class Login
 
 
   public function canLogSso($login, $token) {
+    // on supprime le cache du menu
+    $this->session->remove('menu_0');
+    $this->session->remove('menu_1');
+
     // on vérifie dans la base local si le user existe, sinon on check sur ZEUS
     $user = $this->em->getRepository(UserInterface::class)->findOneBy(['login' => $login]);
 
