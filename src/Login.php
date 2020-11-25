@@ -132,15 +132,9 @@ class Login
             }
           }
         }
-      } else {
-        if ($this->encoder->isPasswordValid($user, $password)){
-          return $user;
-        } else {
-          $this->createConnexion('mdp_incorrect', $user, $user->getLogin(), $ipAddress);
-        }
       }
     } else {
-      $this->createConnexion($user, $login, 'compte_inexistant', $ipAddress);
+      $this->createConnexion($user, $login, 'compte_inexistant', '');
     }
     return false;
   }
