@@ -49,6 +49,8 @@ interface ModuleInterface
 
   public function setDataApplication($dataApplication);
 
+  public function getRedirectionRoute();
+
   public function getEnfants();
 
   public function setEnfants($enfants);
