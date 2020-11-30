@@ -135,9 +135,13 @@ class Synchronisation
         }
         $this->em->flush();
         // on supprime les liaisons avec les roles
-        $module->setRoles(new ArrayCollection());
-        $this->em->persist($module);
+        foreach ($module->getRoles() as $roleModule){
+          if ($roleModule instanceof RoleModuleInterface){
+            $this->em->remove($roleModule);
+          }
+        }
         $this->em->remove($module);
+        $this->em->flush();
         $nbModuleDeleted++;
       }
 
