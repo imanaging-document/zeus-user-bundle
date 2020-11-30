@@ -48,4 +48,6 @@ interface RoleInterface
   public function getLibelleForModule($moduleId);
 
   public function getOrdreForModule($moduleId);
+
+  public function getRoleModule($module);
 }
