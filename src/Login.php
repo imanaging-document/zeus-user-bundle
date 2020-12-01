@@ -51,9 +51,8 @@ class Login
    * @throws Exception
    */
   public function canLog($login, $password, $ipAddress = null){
-    // on supprime le cache du menu
-    $this->session->remove('menu_0');
-    $this->session->remove('menu_1');
+    // on supprime le cache de la session
+    $this->session->clear();
 
     // on vérifie dans la base local si le user existe, sinon on check sur ZEUS
     $user = $this->em->getRepository(UserInterface::class)->findOneBy(['login' => $login]);
