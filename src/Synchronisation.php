@@ -278,6 +278,7 @@ class Synchronisation
             $className = $this->em->getRepository(RoleModuleInterface::class)->getClassName();
             $roleModule = new $className();
             if ($roleModule instanceof RoleModuleInterface){
+              $roleModule->setAcces(true);
               $roleModule->setRole($role);
               $roleModule->setModule($module);
               $roleModule->setLibelle($module->getLibelle());

@@ -17,6 +17,10 @@ interface RoleModuleInterface
 
   public function setOrdre($ordre);
 
+  public function isAcces(): bool;
+
+  public function setAcces(bool $acces);
+
   public function getRole();
 
   public function setRole(RoleInterface $role);
