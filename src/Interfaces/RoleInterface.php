@@ -43,6 +43,8 @@ interface RoleInterface
 
   public function canDo($codeFonction);
 
+  public function canSee($codeModule);
+
   public function canAccess($moduleId);
 
   public function getLibelleForModule($moduleId);
