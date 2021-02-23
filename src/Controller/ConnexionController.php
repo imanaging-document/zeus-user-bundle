@@ -22,14 +22,12 @@ class ConnexionController extends ImanagingController
   public function showTableConnexion(){
     $user = $this->getUser();
     if ($user instanceof UserInterface){
-      if ($this->userCanAccess($user, ['zeus_user_show_connexion_table'])){
-        $em = $this->getDoctrine()->getManager();
-        $connexions = $em->getRepository(ConnexionInterface::class)->findAll();
+      $em = $this->getDoctrine()->getManager();
+      $connexions = $em->getRepository(ConnexionInterface::class)->findAll();
 
-        return $this->render('@ImanagingZeusUser/Connexion/showTable.html.twig', [
-          'connexions' => $connexions
-        ]);
-      }
+      return $this->render('@ImanagingZeusUser/Connexion/showTable.html.twig', [
+        'connexions' => $connexions
+      ]);
     }
     return $this->render('@ImanagingZeusUser/access_denied.html.twig', [
     ]);
