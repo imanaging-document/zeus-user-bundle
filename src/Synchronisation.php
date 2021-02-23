@@ -29,6 +29,7 @@ class Synchronisation
   private $apiGetAlertesPath;
   private $apiGetFonctionsPath;
   private $apiGetNotificationsPath;
+  private $apiGetUsersPath;
 
   /**
    * @param EntityManagerInterface $em
@@ -39,7 +40,7 @@ class Synchronisation
    * @param $apiGetFonctionsPath
    */
   public function __construct(EntityManagerInterface $em, ApiZeusCommunication $communicationService,
-                              $apiGetModulesPath, $apiGetRolesPath, $apiGetAlertesPath, $apiGetFonctionsPath, $apiGetNotificationsPath){
+                              $apiGetModulesPath, $apiGetRolesPath, $apiGetAlertesPath, $apiGetFonctionsPath, $apiGetNotificationsPath, $apiGetUsersPath){
     $this->em = $em;
     $this->apiZeusCommunicationService = $communicationService;
     $this->apiGetModulesPath = $apiGetModulesPath;
@@ -47,16 +48,16 @@ class Synchronisation
     $this->apiGetAlertesPath = $apiGetAlertesPath;
     $this->apiGetFonctionsPath = $apiGetFonctionsPath;
     $this->apiGetNotificationsPath = $apiGetNotificationsPath;
+    $this->apiGetUsersPath = $apiGetUsersPath;
   }
 
   /**
    * @return mixed
    */
   public function synchroniserModules(){
-    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
-    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
+    $token = $this->apiZeusCommunicationService->getApiZeusToken();
 
-    $url = $this->apiGetModulesPath.'?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
+    $url = $this->apiGetModulesPath.'?token='.$token;
     $response = $this->apiZeusCommunicationService->sendGetRequest($url);
 
     if ($response->getHttpCode() === 200){
@@ -159,15 +160,13 @@ class Synchronisation
    * @return mixed
    */
   public function synchroniserFonctions(){
-    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
-    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
+    $token = $this->apiZeusCommunicationService->getApiZeusToken();
 
-    $url = $this->apiGetFonctionsPath.'?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
+    $url = $this->apiGetFonctionsPath.'?token='.$token;
     $response = $this->apiZeusCommunicationService->sendGetRequest($url);
 
-
     if ($response->getHttpCode() === 200){
-      // on gère la suppression de modules
+      // on gère la suppression de fonctions
       $fonctionsExistants = $this->em->getRepository(FonctionInterface::class)->findAll();
 
       $nbFonctionDeleted = 0;
@@ -179,40 +178,31 @@ class Synchronisation
       // ON CHARGE TOUS LES MODULES SANS LES PARENTS
       foreach ($fonctions as $fonction){
         $foundFonction = $this->em->getRepository(FonctionInterface::class)->findOneBy(array('code' => $fonction->code));
-        if ($foundFonction instanceof FonctionInterface) {
-          if (isset($fonction->module_code)){
-            $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $fonction->module_code));
-          } else {
-            $module = null;
-          }
-          $foundFonction->setLibelle($fonction->libelle);
-          $foundFonction->setZeusOnly($fonction->zeus_only);
-          $foundFonction->setModule($module);
-          $this->em->persist($foundFonction);
-          $nbFonctionUpdated++;
-
-          // on supprime du tableaux des modules existants
-          if (($key = array_search($foundFonction, $fonctionsExistants)) !== false) {
-            unset($fonctionsExistants[$key]);
-          }
-        } else {
+        if (!($foundFonction instanceof FonctionInterface)) {
           $className = $this->em->getRepository(FonctionInterface::class)->getClassName();
-          $newFonction = new $className();
-          if ($newFonction instanceof FonctionInterface){
-            if (isset($fonction->module_code)){
-              $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $fonction->module_code));
-            } else {
-              $module = null;
-            }
-            $newFonction->setCode($fonction->code);
-            $newFonction->setLibelle($fonction->libelle);
-            $newFonction->setZeusOnly($fonction->zeus_only);
-            $newFonction->setModule($module);
-            $this->em->persist($newFonction);
-            $nbFonctionAdded++;
-          }
+          $foundFonction = new $className();
+          $foundFonction->setCode($fonction->code);
+          $nbFonctionAdded++;
+        } else {
+          $nbFonctionUpdated ++;
+        }
+
+        if (isset($fonction->module_code)){
+          $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $fonction->module_code));
+        } else {
+          $module = null;
+        }
+        $foundFonction->setLibelle($fonction->libelle);
+        $foundFonction->setZeusOnly($fonction->zeus_only);
+        $foundFonction->setModule($module);
+        $this->em->persist($foundFonction);
+
+        // on supprime du tableaux des modules existants
+        if (($key = array_search($foundFonction, $fonctionsExistants)) !== false) {
+          unset($fonctionsExistants[$key]);
         }
       }
+
       $this->em->flush();
 
       foreach ($fonctionsExistants as $fonction) {
@@ -234,10 +224,8 @@ class Synchronisation
    * @return mixed
    */
   public function synchroniserRoles(){
-    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
-    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
-
-    $url = $this->apiGetRolesPath.'?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
+    $token = $this->apiZeusCommunicationService->getApiZeusToken();
+    $url = $this->apiGetRolesPath.'?token='.$token;
     $response = $this->apiZeusCommunicationService->sendGetRequest($url);
 
     if ($response->getHttpCode() === 200) {
@@ -260,7 +248,7 @@ class Synchronisation
           }
         }
         $role->setZeusOnly(true);
-        $role->setParDefaut($_role->par_defaut);
+        $role->setParDefaut(false);
         $role->setLibelle($_role->libelle);
         $this->em->persist($role);
 
@@ -324,25 +312,32 @@ class Synchronisation
    * @return mixed
    */
   public function synchroniserUsers(){
-    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
-    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
-
-    $typeApplication = getenv('TYPE_APPLICATION');
-    $url = '/utilisateurs/all?login='.$loginApiDashboard.'&password='.$passwordApiDashboard.'&type_application='.$typeApplication;
+    $token = $this->apiZeusCommunicationService->getApiZeusToken();
+    $url = $this->apiGetUsersPath.'?token='.$token;
     $response = $this->apiZeusCommunicationService->sendGetRequest($url);
 
     if ($response->getHttpCode() == 200){
       $nbUserUpdated = 0;
       $nbUserAdded = 0;
+      $nbUserDesactives = 0;
+      // on désactive les USERS
+      $usersZeus = $this->em->getRepository(UserInterface::class)->findBy(['utilisateurZeus' => true]);
+      foreach ($usersZeus as $user) {
+        if ($user instanceof UserInterface) {
+          $user->setActif(false);
+          $this->em->persist($user);
+          $nbUserDesactives++;
+        }
+      }
       // récupération de tous les roles
-      $decodedResponse = json_decode($response->getData());
-      $users = $decodedResponse->users;
+      $users = json_decode($response->getData());
       foreach ($users as $_user) {
         $role = $this->em->getRepository(RoleInterface::class)->findOneBy(['code' => $_user->role_code]);
         if ($role instanceof RoleInterface){
           $user = $this->em->getRepository(UserInterface::class)->findOneBy(['login' => $_user->login]);
           if ($user instanceof UserInterface) {
             $nbUserUpdated++;
+            $nbUserDesactives--;
           } else {
             $className = $this->em->getRepository(UserInterface::class)->getClassName();
             $user = new $className();
@@ -353,9 +348,10 @@ class Synchronisation
           }
           $user->setNom($_user->nom);
           $user->setPrenom($_user->prenom);
-          $user->setUsername($_user->username);
+          $user->setUsername($_user->login);
           $user->setMail($_user->mail);
           $user->setRole($role);
+          $user->setActif($_user->actif);
           $user->setUtilisateurZeus(true);
           $this->em->persist($user);
         }
@@ -364,7 +360,9 @@ class Synchronisation
 
       return [
         'nb_user_updated' => $nbUserUpdated,
-        'nb_user_added' => $nbUserAdded
+        'nb_user_added' => $nbUserAdded,
+        'nb_user_desactived' => $nbUserDesactives
+
       ];
     } else {
       return false;
@@ -375,11 +373,11 @@ class Synchronisation
    * @return mixed
    */
   public function synchroniserAlertes(){
-    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
-    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
+    $token = $this->apiZeusCommunicationService->getApiZeusToken();
 
-    $url = $this->apiGetAlertesPath.'?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
+    $url = $this->apiGetAlertesPath.'?token='.$token;
     $response = $this->apiZeusCommunicationService->sendGetRequest($url);
+
 
     if ($response->getHttpCode() === 200) {
       $nbAlertesMailUpdated = 0;
@@ -399,6 +397,7 @@ class Synchronisation
           $nbAlertesMailUpdated++;
         }
         $alerteFound->setLibelle($alerte->libelle);
+        $alerteFound->setZeusOnly($alerte->zeus_only);
         $this->em->persist($alerteFound);
 
         // on ajoute les destinataires
@@ -441,10 +440,9 @@ class Synchronisation
    * @return mixed
    */
   public function synchroniserNotifications(){
-    $loginApiDashboard = $this->apiZeusCommunicationService->getApiZeusLogin();
-    $passwordApiDashboard = $this->apiZeusCommunicationService->getApiZeusPassword();
+    $token = $this->apiZeusCommunicationService->getApiZeusToken();
 
-    $url = $this->apiGetNotificationsPath.'?login='.$loginApiDashboard.'&password='.$passwordApiDashboard;
+    $url = $this->apiGetNotificationsPath.'?token='.$token;
     $response = $this->apiZeusCommunicationService->sendGetRequest($url);
 
     if ($response->getHttpCode() === 200) {

@@ -26,6 +26,8 @@ class Login
   private $apiCoreCommunication;
   private $encoder;
   private $session;
+  private $apiConnexionPath;
+  private $ownUrl;
 
   /**
    * @param EntityManagerInterface $em
@@ -35,12 +37,14 @@ class Login
    * @param SessionInterface $session
    */
   public function __construct(EntityManagerInterface $em, ApiZeusCommunication $apiZeusCommunication,
-                              UserPasswordEncoderInterface $encoder, ApiCoreCommunication $apiCoreCommunication, SessionInterface $session){
+                              UserPasswordEncoderInterface $encoder, ApiCoreCommunication $apiCoreCommunication, SessionInterface $session, $apiConnexionPath, $ownUrl){
     $this->em = $em;
     $this->apiZeusCommunication = $apiZeusCommunication;
     $this->apiCoreCommunication = $apiCoreCommunication;
     $this->encoder = $encoder;
     $this->session = $session;
+    $this->apiConnexionPath = $apiConnexionPath;
+    $this->ownUrl = $ownUrl;
   }
   
   /**
@@ -59,10 +63,14 @@ class Login
     if ($user instanceof UserInterface){
       if ($user->isUtilisateurZeus()) {
         // on check par API
-        $typeApplication = getenv('TYPE_APPLICATION');
-        $clientTraitementId = getenv('CLIENT_TRAITEMENT');
-        $url = '/connexion-v2?login='.$login.'&password='.$password.'&type_application='.$typeApplication.'&adress_ip='.$ipAddress.'&client_traitement_id='.$clientTraitementId;
-        $response = $this->apiZeusCommunication->sendGetRequest($url);
+        $url = $this->apiConnexionPath;
+        $postData = [
+          'login' => $login,
+          'password' => $password,
+          'adress_ip' => $ipAddress,
+          'url' => $this->ownUrl,
+        ];
+        $response = $this->apiZeusCommunication->sendPostRequest($url, $postData);
 
         if ($response->getHttpCode() == 200) {
           $userLogin = json_decode($response->getData());
@@ -74,7 +82,6 @@ class Login
             }
           }
         }
-        $this->createConnexion($user, $user->getLogin(), 'mdp_incorrect', $ipAddress);
       } elseif ($user->isUtilisateurCore()){
         // on check par API sur le CORE
         $now = new DateTime();

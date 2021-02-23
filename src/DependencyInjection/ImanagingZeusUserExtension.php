@@ -18,7 +18,7 @@ class ImanagingZeusUserExtension extends Extension
    */
   public function load(array $configs, ContainerBuilder $container)
   {
-    $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+    $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
     $loader->load('services.xml');
 
     $configuration = $this->getConfiguration($configs, $container);
@@ -30,6 +30,11 @@ class ImanagingZeusUserExtension extends Extension
     $definition->setArgument(4, $config['api_get_alertes_path']);
     $definition->setArgument(5, $config['api_get_fonctions_path']);
     $definition->setArgument(6, $config['api_get_notifications_path']);
+    $definition->setArgument(7, $config['api_get_users_path']);
+
+    $definition = $container->getDefinition('imanaging_zeus_user.login');
+    $definition->setArgument(5, $config['api_connexion_path']);
+    $definition->setArgument(6, $config['own_url']);
   }
 
   public function getAlias()
