@@ -28,4 +28,8 @@ interface RoleModuleInterface
   public function getModule();
 
   public function setModule(ModuleInterface $module);
+
+  public function getApps();
+
+  public function setApps(array $apps);
 }
