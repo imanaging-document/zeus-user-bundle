@@ -19,7 +19,7 @@
         "symfony/dependency-injection": "^4.2 | ^5",
         "symfony/http-kernel": "^4.2 | ^5",
         "symfony/yaml": "^4.2 | ^5",
-        "imanaging-document/api-communication-bundle": "dev-master"
+        "imanaging-document/api-communication-bundle": "1.*"
     },
     "autoload": {
         "psr-4": {
