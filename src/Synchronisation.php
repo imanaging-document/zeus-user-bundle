@@ -16,6 +16,7 @@ use Imanaging\ZeusUserBundle\Interfaces\DestinataireMailInterface;
 use Imanaging\ZeusUserBundle\Interfaces\FonctionInterface;
 use Imanaging\ZeusUserBundle\Interfaces\ModuleInterface;
 use Imanaging\ZeusUserBundle\Interfaces\NotificationInterface;
+use Imanaging\ZeusUserBundle\Interfaces\ParametrageInterface;
 use Imanaging\ZeusUserBundle\Interfaces\RoleInterface;
 use Imanaging\ZeusUserBundle\Interfaces\RoleModuleInterface;
 use Imanaging\ZeusUserBundle\Interfaces\UserInterface;
@@ -298,6 +299,20 @@ class Synchronisation
         $role->setNotifications($notifications);
       }
       $this->em->flush();
+
+      $roleModuleHash = $this->em->getRepository(ParametrageInterface::class)->findOneBy(['cle' => 'menu_hash']);
+      if (!($roleModuleHash instanceof ParametrageInterface)){
+        $className = $this->em->getRepository(ParametrageInterface::class)->getClassName();
+        $roleModuleHash = new $className();
+      }
+      if ($roleModuleHash instanceof ParametrageInterface){
+        $now = new \DateTime();
+        $hashedToken = hash('sha256', 'menu_hash_'.$now->format('YmdHis'));
+        $roleModuleHash->setCle('menu_hash');
+        $roleModuleHash->setValeur($hashedToken);
+        $this->em->persist($roleModuleHash);
+        $this->em->flush();
+      }
 
       return array(
         'nb_role_updated' => $nbRoleUpdated,
