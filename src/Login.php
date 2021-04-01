@@ -51,7 +51,7 @@ class Login
     $this->ownUrl = $ownUrl;
     $this->apiZeusToken = $apiZeusToken;
   }
-  
+
   /**
    * @param $login
    * @param $password
@@ -124,7 +124,9 @@ class Login
     if ($user instanceof UserInterface){
       if ($user->isUtilisateurZeus()) {
         // on check par API
-        $url = '/connexion-sso?login='.$login.'&token='.$token;
+        $adressIp = '';
+        $appUrl = $this->ownUrl;
+        $url = '/connexion-sso?login='.$login.'&token='.$token.'&adress_ip='.$adressIp.'&app_url='.$appUrl;
         $response = $this->apiZeusCommunication->sendGetRequest($url);
 
         if ($response->getHttpCode() == 200) {
