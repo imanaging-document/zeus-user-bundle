@@ -28,6 +28,7 @@ class Login
   private $session;
   private $apiConnexionPath;
   private $ownUrl;
+  private $apiZeusToken;
 
   /**
    * @param EntityManagerInterface $em
@@ -35,9 +36,12 @@ class Login
    * @param UserPasswordEncoderInterface $encoder
    * @param ApiCoreCommunication $apiCoreCommunication
    * @param SessionInterface $session
+   * @param $apiConnexionPath
+   * @param $ownUrl
+   * @param $apiZeusToken
    */
   public function __construct(EntityManagerInterface $em, ApiZeusCommunication $apiZeusCommunication,
-                              UserPasswordEncoderInterface $encoder, ApiCoreCommunication $apiCoreCommunication, SessionInterface $session, $apiConnexionPath, $ownUrl){
+                              UserPasswordEncoderInterface $encoder, ApiCoreCommunication $apiCoreCommunication, SessionInterface $session, $apiConnexionPath, $ownUrl, $apiZeusToken){
     $this->em = $em;
     $this->apiZeusCommunication = $apiZeusCommunication;
     $this->apiCoreCommunication = $apiCoreCommunication;
@@ -45,6 +49,7 @@ class Login
     $this->session = $session;
     $this->apiConnexionPath = $apiConnexionPath;
     $this->ownUrl = $ownUrl;
+    $this->apiZeusToken = $apiZeusToken;
   }
   
   /**
@@ -216,7 +221,10 @@ class Login
   private function getTokenFromZeus(UserInterface $user)
   {
     // on check par API
-    $url = '/connexion/token/' . $user->getLogin() . '?login='.$this->apiZeusCommunication->getApiZeusLogin().'&password='.$this->apiZeusCommunication->getApiZeusPassword();
+    $now = new DateTime();
+    $tokenDate = $now->format('YmdHis');
+    $token = hash('sha256', $tokenDate.$this->apiZeusToken);
+    $url = '/connexion/token/' . $user->getLogin() . '?token='.$token.'&token_date='.$tokenDate;
     $response = $this->apiZeusCommunication->sendGetRequest($url);
     if ($response->getHttpCode() == 200) {
       return json_decode($response->getData());

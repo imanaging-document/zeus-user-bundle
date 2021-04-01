@@ -35,6 +35,7 @@ class ImanagingZeusUserExtension extends Extension
     $definition = $container->getDefinition('imanaging_zeus_user.login');
     $definition->setArgument(5, $config['api_connexion_path']);
     $definition->setArgument(6, $config['own_url']);
+    $definition->setArgument(7, $config['api_zeus_token']);
   }
 
   public function getAlias()

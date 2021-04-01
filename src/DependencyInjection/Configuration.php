@@ -23,6 +23,7 @@ class Configuration implements ConfigurationInterface
         ->variableNode('api_get_users_path')->defaultValue("")->end()
         ->variableNode('api_connexion_path')->defaultValue("")->end()
         ->variableNode('own_url')->defaultValue("'%env(OWN_URL)%")->end()
+        ->variableNode('api_zeus_token')->defaultValue("%env(ZEUS_API_TOKEN)%")->end()
       ->end()
     ;
 
