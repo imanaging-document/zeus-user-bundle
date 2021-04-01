@@ -25,6 +25,7 @@
         <service id="imanaging_zeus_user.connexion_controller" class="Imanaging\ZeusUserBundle\Controller\ConnexionController" public="true">
             <argument type="service" id="imanaging_zeus_user.login" />
             <argument type="service" id="security.token_storage" />
+            <argument type="service" id="service_container" />
         </service>
 
         <service id="Imanaging\ZeusUserBundle\Login" alias="imanaging_zeus_user.login" />

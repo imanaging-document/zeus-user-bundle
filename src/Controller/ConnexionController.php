@@ -5,6 +5,7 @@ namespace Imanaging\ZeusUserBundle\Controller;
 use Imanaging\ZeusUserBundle\Interfaces\ConnexionInterface;
 use Imanaging\ZeusUserBundle\Interfaces\UserInterface;
 use Imanaging\ZeusUserBundle\Login;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -13,8 +14,9 @@ class ConnexionController extends ImanagingController
   private $login;
   private $tokenStorage;
 
-  public function __construct(Login $login, TokenStorageInterface $tokenStorage)
+  public function __construct(Login $login, TokenStorageInterface $tokenStorage, ContainerInterface $container)
   {
+    $this->setContainer($container);
     $this->login = $login;
     $this->tokenStorage = $tokenStorage;
   }
