@@ -253,7 +253,7 @@ class Synchronisation
         $role->setLibelle($_role->libelle);
         $this->em->persist($role);
 
-        
+        $rolesModules = [];
         foreach ($role->getModules() as $module) {
           if ($module instanceof RoleModuleInterface) {
             $rolesModules[$module->getModule()->getCode()] = $module;
