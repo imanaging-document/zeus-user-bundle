@@ -253,10 +253,10 @@ class Synchronisation
         $role->setLibelle($_role->libelle);
         $this->em->persist($role);
 
-        // On supprime tous les modules associés à ce role
+        
         foreach ($role->getModules() as $module) {
           if ($module instanceof RoleModuleInterface) {
-            $this->em->remove($module);
+            $rolesModules[$module->getModule()->getCode()] = $module;
           }
         }
 
@@ -264,18 +264,35 @@ class Synchronisation
         foreach ($_role->modules as $_module) {
           $module = $this->em->getRepository(ModuleInterface::class)->findOneBy(array('code' => $_module->code));
           if ($module instanceof ModuleInterface) {
-            $className = $this->em->getRepository(RoleModuleInterface::class)->getClassName();
-            $roleModule = new $className();
-            if ($roleModule instanceof RoleModuleInterface){
-              $roleModule->setAcces(true);
-              $roleModule->setRole($role);
-              $roleModule->setModule($module);
-              $roleModule->setLibelle($module->getLibelle());
-              $roleModule->setOrdre($module->getOrdre());
-              $this->em->persist($roleModule);
+            if (array_key_exists($module->getCode(), $rolesModules)) {
+              $roleModule = $rolesModules[$module->getCode()];
+              if ($roleModule instanceof RoleModuleInterface){
+                $roleModule->setAcces(true);
+                $roleModule->setLibelle($module->getLibelle());
+                $roleModule->setOrdre($module->getOrdre());
+                $this->em->persist($roleModule);
+
+                unset($rolesModules[$module->getCode()]);
+              }
+            } else {
+              $className = $this->em->getRepository(RoleModuleInterface::class)->getClassName();
+              $roleModule = new $className();
+              if ($roleModule instanceof RoleModuleInterface){
+                $roleModule->setAcces(true);
+                $roleModule->setRole($role);
+                $roleModule->setModule($module);
+                $roleModule->setLibelle($module->getLibelle());
+                $roleModule->setOrdre($module->getOrdre());
+                $this->em->persist($roleModule);
+              }
             }
           }
         }
+
+        foreach ($rolesModules as $roleModule) {
+          $this->em->remove($roleModule);
+        }
+        
         // On récupère toutes les fonctions auxquelles ce role est lié
         $fonctions = array();
         foreach ($_role->fonctions as $fonction) {
