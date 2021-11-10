@@ -65,6 +65,10 @@ class Login
 
     // on vérifie dans la base local si le user existe, sinon on check sur ZEUS
     $user = $this->em->getRepository(UserInterface::class)->findOneBy(['login' => $login]);
+    if (!($user instanceof UserInterface)){
+      // On tente aussi par e-mail
+      $user = $this->em->getRepository(UserInterface::class)->findOneBy(['mail' => $login]);
+    }
     if ($user instanceof UserInterface){
       if ($user->isUtilisateurZeus()) {
         // on check par API
