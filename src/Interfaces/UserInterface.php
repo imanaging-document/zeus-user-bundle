@@ -27,7 +27,7 @@ interface UserInterface extends UserInterfaceAlias, PasswordAuthenticatedUserInt
 
   public function setUsername($username);
 
-  public function getPassword();
+  public function getPassword(): ?string;
 
   public function setPassword(string $password): void;
 
