@@ -2,9 +2,10 @@
 
 namespace Imanaging\ZeusUserBundle\Interfaces;
 
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface as UserInterfaceAlias;
 
-interface UserInterface extends UserInterfaceAlias
+interface UserInterface extends UserInterfaceAlias, PasswordAuthenticatedUserInterface
 {
   public function getId();
 
