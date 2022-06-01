@@ -16,7 +16,8 @@ use Imanaging\ApiCommunicationBundle\ApiZeusCommunication;
 use Imanaging\ZeusUserBundle\Interfaces\ConnexionInterface;
 use Imanaging\ZeusUserBundle\Interfaces\ConnexionStatutInterface;
 use Imanaging\ZeusUserBundle\Interfaces\UserInterface;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class Login
@@ -24,8 +25,8 @@ class Login
   private $em;
   private $apiZeusCommunication;
   private $apiCoreCommunication;
-  private $encoder;
-  private $session;
+  private $hasher;
+  private $requestStack;
   private $apiConnexionPath;
   private $ownUrl;
   private $apiZeusToken;
@@ -35,18 +36,17 @@ class Login
    * @param ApiZeusCommunication $apiZeusCommunication
    * @param UserPasswordEncoderInterface $encoder
    * @param ApiCoreCommunication $apiCoreCommunication
-   * @param SessionInterface $session
    * @param $apiConnexionPath
    * @param $ownUrl
    * @param $apiZeusToken
    */
   public function __construct(EntityManagerInterface $em, ApiZeusCommunication $apiZeusCommunication,
-                              UserPasswordEncoderInterface $encoder, ApiCoreCommunication $apiCoreCommunication, SessionInterface $session, $apiConnexionPath, $ownUrl, $apiZeusToken){
+                              UserPasswordHasherInterface $hasher, ApiCoreCommunication $apiCoreCommunication, RequestStack $requestStack, $apiConnexionPath, $ownUrl, $apiZeusToken){
     $this->em = $em;
     $this->apiZeusCommunication = $apiZeusCommunication;
     $this->apiCoreCommunication = $apiCoreCommunication;
-    $this->encoder = $encoder;
-    $this->session = $session;
+    $this->hasher = $hasher;
+    $this->requestStack = $requestStack;
     $this->apiConnexionPath = $apiConnexionPath;
     $this->ownUrl = $ownUrl;
     $this->apiZeusToken = $apiZeusToken;
@@ -61,7 +61,7 @@ class Login
    */
   public function canLog($login, $password, $ipAddress = null){
     // on supprime le cache de la session
-    $this->session->clear();
+    $this->requestStack->getSession()->clear();
 
     // on vérifie dans la base local si le user existe, sinon on check sur ZEUS
     $user = $this->em->getRepository(UserInterface::class)->findOneBy(['login' => $login]);
@@ -119,8 +119,8 @@ class Login
 
   public function canLogSso($login, $token) {
     // on supprime le cache du menu
-    $this->session->remove('menu_0');
-    $this->session->remove('menu_1');
+    $this->requestStack->getSession()->remove('menu_0');
+    $this->requestStack->getSession()->remove('menu_1');
 
     // on vérifie dans la base local si le user existe, sinon on check sur ZEUS
     $user = $this->em->getRepository(UserInterface::class)->findOneBy(['login' => $login]);
