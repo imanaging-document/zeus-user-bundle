@@ -12,7 +12,7 @@ class ImanagingZeusUserBundle extends Bundle
   /**
    * Overridden to allow for the custom extension alias.
    */
-  public function getContainerExtension()
+  public function getContainerExtension() : ?ImanagingZeusUserExtension
   {
     if (null === $this->extension) {
       $this->extension = new ImanagingZeusUserExtension();

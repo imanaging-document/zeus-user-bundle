@@ -38,7 +38,7 @@ class ImanagingZeusUserExtension extends Extension
     $definition->setArgument(7, $config['api_zeus_token']);
   }
 
-  public function getAlias()
+  public function getAlias() : string
   {
     return 'imanaging_zeus_user';
   }
