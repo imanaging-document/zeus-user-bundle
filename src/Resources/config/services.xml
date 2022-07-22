@@ -28,7 +28,45 @@
             <argument type="service" id="service_container" />
         </service>
 
+        <service id="imanaging_zeus_user.connexion_controller" class="Imanaging\ZeusUserBundle\Controller\ConnexionController" public="true">
+            <argument type="service" id="imanaging_zeus_user.login" />
+            <argument type="service" id="security.token_storage" />
+            <argument type="service" id="service_container" />
+        </service>
+
+        <service id="imanaging_zeus_user.security.core_sso_authenticator" class="Imanaging\ZeusUserBundle\Security\CoreSsoAuthenticator" public="true">
+            <argument type="service" id="doctrine.orm.default_entity_manager" />
+            <argument type="service" id="router" />
+            <argument type="service" id="imanaging_zeus_user.login" />
+            <argument />
+        </service>
+
+        <service id="imanaging_zeus_user.security.core_validation_sso_authenticator" class="Imanaging\ZeusUserBundle\Security\CoreValidationSsoAuthenticator" public="true">
+            <argument type="service" id="doctrine.orm.default_entity_manager" />
+            <argument type="service" id="router" />
+            <argument type="service" id="imanaging_zeus_user.login" />
+            <argument />
+        </service>
+
+        <service id="imanaging_zeus_user.security.custom_zeus_sso_authenticator" class="Imanaging\ZeusUserBundle\Security\CustomZeusAuthenticator" public="true">
+            <argument type="service" id="doctrine.orm.default_entity_manager" />
+            <argument type="service" id="router" />
+            <argument type="service" id="imanaging_zeus_user.login" />
+            <argument />
+        </service>
+
+        <service id="imanaging_zeus_user.security.zeus_validation_sso_authenticator" class="Imanaging\ZeusUserBundle\Security\ZeusValidationSsoAuthenticator" public="true">
+            <argument type="service" id="doctrine.orm.default_entity_manager" />
+            <argument type="service" id="router" />
+            <argument type="service" id="imanaging_zeus_user.login" />
+            <argument />
+        </service>
+
         <service id="Imanaging\ZeusUserBundle\Login" alias="imanaging_zeus_user.login" />
         <service id="Imanaging\ZeusUserBundle\Synchronisation" alias="imanaging_zeus_user.synchronisation" />
+        <service id="Imanaging\ZeusUserBundle\Security\CoreSsoAuthenticator" alias="imanaging_zeus_user.security.core_sso_authenticator" />
+        <service id="Imanaging\ZeusUserBundle\Security\CoreValidationSsoAuthenticator" alias="imanaging_zeus_user.security.core_validation_sso_authenticator" />
+        <service id="Imanaging\ZeusUserBundle\Security\CustomZeusAuthenticator" alias="imanaging_zeus_user.security.custom_zeus_sso_authenticator" />
+        <service id="Imanaging\ZeusUserBundle\Security\ZeusValidationSsoAuthenticator" alias="imanaging_zeus_user.security.zeus_validation_sso_authenticator" />
     </services>
 </container>
