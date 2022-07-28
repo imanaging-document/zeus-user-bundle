@@ -4,13 +4,11 @@
         xsi:schemaLocation="http://symfony.com/schema/routing
         https://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <!-- Matches /blog exactly -->
-    <route id="zeus_user_show_connexion_table" path="/show-conn-table" controller="imanaging_zeus_user.connexion_controller:showTableConnexion">
-        <!-- settings -->
+    <route id="zeus_user_show_connexion_table" path="/show-conn-table">
+        <default key="_controller">imanaging_zeus_user.connexion_controller::showTableConnexion</default>
     </route>
 
-    <!-- Matches /blog exactly -->
-    <route id="zeus_user_get_data_for_redirect" path="/get-data-for-redirect" controller="imanaging_zeus_user.connexion_controller:getDataForRedirect">
-        <!-- settings -->
+    <route id="zeus_user_get_data_for_redirect" path="/get-data-for-redirect">
+        <default key="_controller">imanaging_zeus_user.connexion_controller::getDataForRedirect</default>
     </route>
 </routes>
