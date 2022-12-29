@@ -40,10 +40,7 @@ class ImanagingController extends AbstractController
     }
     if ($showFlashBag){
       if (!$canAccess){
-        $this->get('session')->getFlashBag()->add(
-          'error',
-          'Vous ne pouvez pas accéder à ce module.'
-        );
+        $this->addFlash('error', 'Vous ne pouvez pas accéder à ce module.');
       }
     }
     return $canAccess;
