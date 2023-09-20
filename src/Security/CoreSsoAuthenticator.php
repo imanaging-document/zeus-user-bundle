@@ -86,7 +86,7 @@ class CoreSsoAuthenticator extends AbstractAuthenticator implements Authenticati
             $this->loginService->createConnexion($user, $user->getLogin(), 'connexion_reussie');
             return true;
           } else {
-            throw new AuthenticationException('Impossible de vous connecter. #2');
+            throw new AuthenticationException('Identifiants de connexion invalides. #2');
           }
         }, $password),
         [
@@ -106,10 +106,8 @@ class CoreSsoAuthenticator extends AbstractAuthenticator implements Authenticati
 
   public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
   {
-    $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
-    return new RedirectResponse(
-      $this->router->generate('hephaistos_login')
-    );
+    $target = $request->get('p');
+    return new RedirectResponse($this->decrypt($target)."?e=".base64_encode($exception->getMessage()));
   }
 
   public function start(Request $request, AuthenticationException $authException = null): RedirectResponse

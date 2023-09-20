@@ -51,14 +51,20 @@ class CoreValidationSsoAuthenticator extends AbstractAuthenticator implements Au
 
   public function supports(Request $request): ?bool
   {
+    if (is_null($request->get('e'))) {
+      return false;
+    }
     return str_contains($request->getPathInfo(), '/sso-login-core/return-validation') && $request->isMethod('GET');
   }
 
   public function authenticate(Request $request): Passport
   {
-    $login = $request->get('login');
+    $exception = $request->get('e');
+    if (!is_null($exception)) {
+      throw new AuthenticationException(base64_decode($exception));
+    }
     return new Passport(
-      new UserBadge($login, function($userIdentifier) {
+      new UserBadge('$login', function($userIdentifier) {
         $user = $this->em->getRepository(User::class)->findOneByLoginOrMail($userIdentifier);
         if (!($user instanceof User)) {
           $this->loginService->createConnexion(null, $userIdentifier, 'compte_inexistant');
