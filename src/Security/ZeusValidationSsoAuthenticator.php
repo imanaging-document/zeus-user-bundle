@@ -56,6 +56,14 @@ class ZeusValidationSsoAuthenticator extends AbstractAuthenticator implements Au
   public function authenticate(Request $request): Passport
   {
     $login = $request->get('login');
+    if (is_null($login)) {
+      $exception = $request->get('e');
+      if (!is_null($exception)) {
+        throw new AuthenticationException(base64_decode($exception));
+      } else {
+        throw new AuthenticationException('Impossible de vous connecter. #5');
+      }
+    }
 
     return new Passport(
       new UserBadge($login, function($userIdentifier) {
