@@ -86,7 +86,7 @@ class CoreSsoAuthenticator extends AbstractAuthenticator implements Authenticati
             $this->loginService->createConnexion($user, $user->getLogin(), 'connexion_reussie');
             return true;
           } else {
-            throw new AuthenticationException('Identifiants de connexion invalides. #2');
+            throw new AuthenticationException('Identifiants de connexion invalides.');
           }
         }, $password),
         [
