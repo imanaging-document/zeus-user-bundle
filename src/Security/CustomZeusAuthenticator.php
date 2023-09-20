@@ -61,7 +61,7 @@ class CustomZeusAuthenticator extends AbstractAuthenticator implements Authentic
     $user = $this->em->getRepository(UserInterface::class)->findOneByLoginOrMail($login);
     if (!($user instanceof User)) {
       $this->loginService->createConnexion(null, $login, 'compte_inexistant');
-      throw new AuthenticationException('Identifiants de connexion invalides. #1');
+      throw new AuthenticationException('Identifiants de connexion invalides.');
     }
 
     if ($user->isUtilisateurZeus()) {
