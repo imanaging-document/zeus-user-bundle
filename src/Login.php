@@ -16,6 +16,7 @@ use Imanaging\ApiCommunicationBundle\ApiZeusCommunication;
 use Imanaging\ZeusUserBundle\Interfaces\ConnexionInterface;
 use Imanaging\ZeusUserBundle\Interfaces\ConnexionStatutInterface;
 use Imanaging\ZeusUserBundle\Interfaces\UserInterface;
+use Imanaging\ZeusUserBundle\Security\CoreSsoAuthenticator;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -96,19 +97,15 @@ class Login
         $now = new DateTime();
         $nowFormat = $now->format('YmdHis');
         $tokenFormatted = hash('sha256', $this->apiCoreCommunication->getApiCoreToken());
-
-        $url = '/can-log?token='.$tokenFormatted.'&token_date'.$nowFormat.'&login='.$login.'&password='.$password;
+        $hashedPassword = CoreSsoAuthenticator::encrypt($password);
+        $url = '/can-log?token='.$tokenFormatted.'&token_date'.$nowFormat.'&login='.$login.'&password='.$hashedPassword;
         $response = $this->apiCoreCommunication->sendGetRequest($url);
         if ($response->getHttpCode() == 200) {
           return $user;
         }
         $this->createConnexion($user, $user->getLogin(), 'mdp_incorrect', $ipAddress);
       } else {
-        if ($this->encoder->isPasswordValid($user, $password)){
-          return $user;
-        } else {
-          $this->createConnexion('mdp_incorrect', $user, $user->getLogin(), $ipAddress);
-        }
+        throw new Exception("Utilisateur ni CORE ni ZEUS !");
       }
     } else {
       $this->createConnexion($user, $login, 'compte_inexistant', $ipAddress);
