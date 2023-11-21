@@ -21,6 +21,10 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class Login
 {
+  const ALGORITHM = 'aes-256-ctr';
+  const SKEY = '1lgs2gjwjPZpeqUHlYD9ktJBXfsuH5al';
+  const IV = 'gKySztfUMx7uQEl7';
+  
   private $em;
   private $apiZeusCommunication;
   private $apiCoreCommunication;
@@ -81,6 +85,7 @@ class Login
         $nowFormat = $now->format('YmdHis');
         $tokenFormatted = hash('sha256', $this->apiCoreCommunication->getApiCoreToken());
 
+        $password = bin2hex(openssl_encrypt($password, self::ALGORITHM, self::SKEY, OPENSSL_RAW_DATA, self::IV));
         $url = '/can-log?token='.$tokenFormatted.'&token_date'.$nowFormat.'&login='.$login.'&password='.$password;
         $response = $this->apiCoreCommunication->sendGetRequest($url);
         if ($response->getHttpCode() == 200) {
