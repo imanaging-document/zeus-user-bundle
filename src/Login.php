@@ -102,8 +102,11 @@ class Login
         $response = $this->apiCoreCommunication->sendGetRequest($url);
         if ($response->getHttpCode() == 200) {
           return $user;
+        } else if ($response->getHttpCode() == 510){
+          $this->createConnexion($user, $user->getLogin(), 'compte_inactif', $ipAddress);
+        } else {
+          $this->createConnexion($user, $user->getLogin(), 'mdp_incorrect', $ipAddress);
         }
-        $this->createConnexion($user, $user->getLogin(), 'mdp_incorrect', $ipAddress);
       } else {
         throw new Exception("Utilisateur ni CORE ni ZEUS !");
       }
