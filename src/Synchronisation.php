@@ -78,6 +78,7 @@ class Synchronisation
           $foundModule->setLibelle($module->libelle);
           $foundModule->setRoute($module->route);
           $foundModule->setOrdre($module->ordre);
+          $foundModule->setIconClasses($module->icon_classes);
           $foundModule->setNiveau($module->niveau);
           $foundModule->setDroite($module->droite);
           $foundModule->setVisible($module->visible);
@@ -100,6 +101,7 @@ class Synchronisation
             $newModule->setLibelle($module->libelle);
             $newModule->setRoute($module->route);
             $newModule->setOrdre($module->ordre);
+            $newModule->setIconClasses($module->icon_classes);
             $newModule->setNiveau($module->niveau);
             $newModule->setDroite($module->droite);
             $newModule->setVisible($module->visible);
