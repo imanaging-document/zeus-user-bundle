@@ -25,6 +25,10 @@ interface ModuleInterface
 
   public function setOrdre($ordre);
 
+  public function getIconClasses();
+
+  public function setIconClasses($iconClasses);
+
   public function getNiveau(): int;
 
   public function setNiveau(int $niveau): void;
