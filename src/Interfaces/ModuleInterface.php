@@ -70,4 +70,6 @@ interface ModuleInterface
   public function getFonctions();
 
   public function setFonctions($fonctions);
+
+  public function hasChildWithChildren(): bool;
 }
