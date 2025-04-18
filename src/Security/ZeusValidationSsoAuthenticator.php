@@ -96,7 +96,7 @@ class ZeusValidationSsoAuthenticator extends AbstractAuthenticator implements Au
     );
   }
 
-  public function start(Request $request, AuthenticationException $authException = null): RedirectResponse
+  public function start(Request $request, ?AuthenticationException $authException = null): RedirectResponse
   {
     return new RedirectResponse(
       $this->router->generate('hephaistos_login')
