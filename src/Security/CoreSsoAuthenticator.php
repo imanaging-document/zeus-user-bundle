@@ -110,7 +110,7 @@ class CoreSsoAuthenticator extends AbstractAuthenticator implements Authenticati
     return new RedirectResponse($this->decrypt($target)."?e=".base64_encode($exception->getMessage()));
   }
 
-  public function start(Request $request, AuthenticationException $authException = null): RedirectResponse
+  public function start(Request $request, ?AuthenticationException $authException = null): RedirectResponse
   {
     $target = $this->getTargetPath($request->getSession(), 'user_secured_area');
     return new RedirectResponse(
