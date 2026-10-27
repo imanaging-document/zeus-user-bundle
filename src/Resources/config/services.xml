@@ -68,5 +68,16 @@
         <service id="Imanaging\ZeusUserBundle\Security\CoreValidationSsoAuthenticator" alias="imanaging_zeus_user.security.core_validation_sso_authenticator" />
         <service id="Imanaging\ZeusUserBundle\Security\CustomZeusAuthenticator" alias="imanaging_zeus_user.security.custom_zeus_sso_authenticator" />
         <service id="Imanaging\ZeusUserBundle\Security\ZeusValidationSsoAuthenticator" alias="imanaging_zeus_user.security.zeus_validation_sso_authenticator" />
+
+        <service id="Imanaging\ZeusUserBundle\Sso\Client" class="Imanaging\ZeusUserBundle\Sso\Client">
+            <argument type="service" id="http_client" />
+        </service>
+        <service id="Imanaging\ZeusUserBundle\Sso\GrantStore" class="Imanaging\ZeusUserBundle\Sso\GrantStore">
+            <argument type="service" id="doctrine.dbal.default_connection" />
+        </service>
+        <service id="Imanaging\ZeusUserBundle\Sso\AuditLog" class="Imanaging\ZeusUserBundle\Sso\AuditLog">
+            <argument type="service" id="doctrine.dbal.default_connection" />
+            <argument type="service" id="logger" />
+        </service>
     </services>
 </container>
