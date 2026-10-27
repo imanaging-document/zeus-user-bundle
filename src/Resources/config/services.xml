@@ -71,6 +71,7 @@
 
         <service id="Imanaging\ZeusUserBundle\Sso\Client" class="Imanaging\ZeusUserBundle\Sso\Client">
             <argument type="service" id="http_client" />
+            <argument>%kernel.debug%</argument>
         </service>
         <service id="Imanaging\ZeusUserBundle\Sso\GrantStore" class="Imanaging\ZeusUserBundle\Sso\GrantStore">
             <argument type="service" id="doctrine.dbal.default_connection" />

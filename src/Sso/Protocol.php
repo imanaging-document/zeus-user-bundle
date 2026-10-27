@@ -48,7 +48,7 @@ final class Protocol
     }
   }
 
-  public static function applicationUrl(string $url): string
+  public static function applicationUrl(string $url, bool $allowLocalHttp = false): string
   {
     $parts = parse_url($url);
     if (!is_array($parts) || !in_array($parts['scheme'] ?? '', ['https', 'http'], true)
@@ -57,13 +57,14 @@ final class Protocol
       || preg_match('/[\x00-\x20]/', $url)) {
       throw new AuthenticationException('Invalid SSO application URL.');
     }
-    if ($parts['scheme'] !== 'https' && !in_array($parts['host'], ['localhost', '127.0.0.1', '::1'], true)) {
+    if ($parts['scheme'] !== 'https' && !in_array($parts['host'], ['localhost', '127.0.0.1', '::1'], true)
+      && !($allowLocalHttp && str_ends_with(strtolower($parts['host']), '.local'))) {
       throw new AuthenticationException('HTTPS required for SSO.');
     }
     return rtrim($url, '/');
   }
 
-  public static function validateAuthorization(array $data): void
+  public static function validateAuthorization(array $data, bool $allowLocalHttp = false): void
   {
     $keys = ['application_url', 'callback', 'challenge', 'correlation', 'issued_at', 'protocol', 'signature', 'state'];
     $actual = array_keys($data);
@@ -81,7 +82,7 @@ final class Protocol
     if (!is_string($data['challenge']) || !preg_match('/^[A-Za-z0-9_-]{43}$/D', $data['challenge'])) {
       throw new AuthenticationException('Invalid PKCE challenge.');
     }
-    $base = self::applicationUrl($data['application_url']);
+    $base = self::applicationUrl($data['application_url'], $allowLocalHttp);
     $callbacks = [$base . '/sso-login/return-validation/v2', $base . '/administration/sso-login/return-validation/v2'];
     if (!in_array($data['callback'], $callbacks, true)) {
       throw new AuthenticationException('Unregistered SSO callback.');

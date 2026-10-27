@@ -9,7 +9,8 @@ final class Authority
   public function __construct(
     private ApplicationRegistryInterface $registry,
     private GrantStore $grants,
-    private AuditLog $audit
+    private AuditLog $audit,
+    private bool $allowLocalHttp = false
   )
   {
   }
@@ -17,7 +18,7 @@ final class Authority
   public function authorize(array $data, ?string $userId, string $browserIp): string
   {
     try {
-      Protocol::validateAuthorization($data);
+      Protocol::validateAuthorization($data, $this->allowLocalHttp);
       $application = $this->registry->find($data['application_url']);
       Protocol::verify($data, $application['secret'], 'authorize');
     } catch (AuthenticationException $exception) {
@@ -55,7 +56,7 @@ final class Authority
       if ($keys !== $expected || count(array_filter($data, 'is_string')) !== count($data) || $data['protocol'] !== '2') {
         throw new AuthenticationException('Invalid exchange.');
       }
-      $application = $this->registry->find(Protocol::applicationUrl($data['application_url']));
+      $application = $this->registry->find(Protocol::applicationUrl($data['application_url'], $this->allowLocalHttp));
       Protocol::verify($data, $application['secret'], 'exchange');
       $context['application_url'] = $application['url'];
       $grant = $this->grants->consume($data, $application);

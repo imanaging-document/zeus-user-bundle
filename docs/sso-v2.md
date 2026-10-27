@@ -46,7 +46,7 @@ Client::complete() consomme le state de session, ne suit aucune redirection HTTP
 authenticated ou no_session. Une exception signifie un refus définitif de cette tentative.
 Le demandeur doit conserver la cascade Zeus -> Core -> connexion Core. L'endpoint interactif
 /sso-login/v2/authorize est une convention préparée par Client::begin(interactive: true) ;
-son implémentation Core appartient à la prochaine étape et n'existe pas encore ici.
+son implémentation est fournie dans HephaistosCore/src/Controller/SsoV2Controller.php.
 
 Le résultat ne constitue pas une session Symfony : l'authentificateur du satellite doit
 résoudre l'identité locale, vérifier actif/provenance/droits puis laisser Symfony ouvrir
@@ -82,3 +82,34 @@ SSO_TEST_AUTOLOAD permet d'utiliser l'autoload d'une installation de dépendance
 Le bootstrap ne charge aucun .env. Tester également le parcours HTTP réel avant déploiement,
 notamment les sessions, le MFA et la cascade une fois Core et un satellite migrés.
 
+
+## Reprise du formulaire Core
+
+Le Core conserve les demandes entrantes dans SessionContext::PENDING_AUTHORIZATIONS.
+Login::canLog() utilise maintenant SessionContext::resetForLogin() : les anciens attributs
+sont toujours effacés, sauf les demandes v2 non expirées et leur target_path local lié au
+nonce de reprise. Cette révision est nécessaire avant d'activer l'autorité v2 dans Core.
+
+
+## Connexion interne du Core vers Zeus
+
+Le Core utilise désormais le client v2 pour son propre contrôle de session Zeus.
+Une réponse signée `no_session` conduit au formulaire Core ; le lien « Connexion interne Zeus »
+ouvre `/sso-login/v2/authorize` sur Zeus. Le formulaire et le MFA restent sur Zeus.
+Le retour utilise un code à usage unique, PKCE et un état conservé en session Core.
+L'ancien callback Zeus du Core refuse les retours non v2.
+
+Le champ nullable unique `User.zeusSsoSubject` lie durablement le compte Core à l'identifiant Zeus.
+Le premier lien utilise un login unique, actif, interne et doté d'un rôle ; aucun rapprochement par mail.
+La création de ce champ et des tables SSO passe par Doctrine `schema:update --force`, sans migration SQL.
+
+Les endpoints historiques des autorités restent disponibles pour les anciens satellites.
+Une continuation en session ramène un ancien satellite à son callback déclaré ; le retour est à usage unique.
+Cette compatibilité reste un protocole legacy : elle ne bénéficie pas des garanties du callback v2.
+
+HTTP sur les domaines `.local` est autorisé uniquement lorsque `kernel.debug` est vrai.
+Les domaines publics restent soumis à HTTPS. Aucun paramètre d'environnement supplémentaire n'est ajouté.
+
+Ordre : publier le bundle, mettre à jour son package dans Zeus et Core, appliquer
+le schéma Doctrine dans les environnements concernés, puis vider leurs caches.
+La publication Git, les mises à jour Composer et les mises à jour de schéma ne sont pas exécutées par ces modifications.

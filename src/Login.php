@@ -62,7 +62,7 @@ class Login
    */
   public function canLog($login, $password, $ipAddress = null){
     // on supprime le cache de la session
-    $this->requestStack->getSession()->clear();
+    \Imanaging\ZeusUserBundle\Sso\SessionContext::resetForLogin($this->requestStack->getSession());
 
     // on vérifie dans la base local si le user existe, sinon on check sur ZEUS
     $user = $this->em->getRepository(UserInterface::class)->findOneBy(['login' => $login]);

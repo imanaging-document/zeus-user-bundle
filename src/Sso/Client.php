@@ -10,7 +10,7 @@ final class Client
 {
   private const SESSION_KEY = '_hephaistos_sso_v2';
 
-  public function __construct(private HttpClientInterface $http)
+  public function __construct(private HttpClientInterface $http, private bool $allowLocalHttp = false)
   {
   }
 
@@ -26,8 +26,8 @@ final class Client
     bool $interactive = false
   ): string
   {
-    $applicationUrl = Protocol::applicationUrl($applicationUrl);
-    $authorityUrl = Protocol::applicationUrl($authorityUrl);
+    $applicationUrl = Protocol::applicationUrl($applicationUrl, $this->allowLocalHttp);
+    $authorityUrl = Protocol::applicationUrl($authorityUrl, $this->allowLocalHttp);
     if (!in_array($source, ['zeus', 'core'], true)) {
       throw new \InvalidArgumentException('Unknown SSO source.');
     }
@@ -39,7 +39,7 @@ final class Client
       'issued_at' => (string) time(),
     ];
     $data['signature'] = Protocol::sign($data, $secret, 'authorize');
-    Protocol::validateAuthorization($data);
+    Protocol::validateAuthorization($data, $this->allowLocalHttp);
     $pending = array_filter($session->get(self::SESSION_KEY, []), static fn(array $entry): bool => $entry['expires'] > time());
     if (count($pending) >= 10) {
       array_shift($pending);

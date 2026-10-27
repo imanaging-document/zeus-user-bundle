@@ -22,6 +22,7 @@ final class ServicesTest extends TestCase
   public function testNewServicesCompileWithoutChangingLegacyAuthenticatorDefinitions(): void
   {
     $container = new ContainerBuilder();
+    $container->setParameter('kernel.debug', false);
     $loader = new XmlFileLoader($container, new FileLocator(dirname(__DIR__, 2) . '/src/Resources/config'));
     $loader->load('services.xml');
     self::assertTrue($container->hasDefinition('imanaging_zeus_user.security.zeus_validation_sso_authenticator'));
