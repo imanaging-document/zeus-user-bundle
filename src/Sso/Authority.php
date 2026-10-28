@@ -62,7 +62,9 @@ final class Authority
       $grant = $this->grants->consume($data, $application);
       $context['correlation'] = $grant['correlation'];
       $context['user_id'] = $grant['user_id'];
-      $identity = $this->registry->identity($grant['user_id'], $application, $grant['browser_ip']);
+      $identity = $this->registry->identity($grant['user_id'], $application, $grant['browser_ip'], [
+        'protocol' => 2, 'correlation' => $grant['correlation'],
+      ]);
       $this->audit->record(2, 'exchange_accepted', $serverIp, $context);
       return $identity;
     } catch (AuthenticationException $exception) {

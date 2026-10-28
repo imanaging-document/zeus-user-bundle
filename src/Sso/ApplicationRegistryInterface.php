@@ -8,5 +8,5 @@ interface ApplicationRegistryInterface
   public function find(string $applicationUrl): array;
 
   /** Recheck account and application access, return subject/login/source, or reject. */
-  public function identity(string $userId, array $application, string $browserIp): array;
+  public function identity(string $userId, array $application, string $browserIp, ?array $history = null): array;
 }

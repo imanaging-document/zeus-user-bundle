@@ -94,8 +94,10 @@ nonce de reprise. Cette révision est nécessaire avant d'activer l'autorité v2
 ## Connexion interne du Core vers Zeus
 
 Le Core utilise désormais le client v2 pour son propre contrôle de session Zeus.
-Une réponse signée `no_session` conduit au formulaire Core ; le lien « Connexion interne Zeus »
-ouvre `/sso-login/v2/authorize` sur Zeus. Le formulaire et le MFA restent sur Zeus.
+Le contrôle de session Zeus est déclenché automatiquement à l’ouverture de la connexion Core.
+Une réponse signée `no_session` conduit au formulaire Core. Si les identifiants saisis correspondent
+à un compte interne, le parcours ouvre automatiquement `/sso-login/v2/authorize` sur Zeus.
+Le formulaire Zeus et son MFA restent sur Zeus ; aucun bouton supplémentaire n’est nécessaire.
 Le retour utilise un code à usage unique, PKCE et un état conservé en session Core.
 L'ancien callback Zeus du Core refuse les retours non v2.
 

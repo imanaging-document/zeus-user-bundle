@@ -25,6 +25,7 @@ final class FlowTest extends TestCase
   private Authority $authority;
   private AuditLog $audit;
   private bool $allowed = true;
+  private array $identityHistory = [];
   private array $app;
 
   protected function setUp(): void
@@ -44,7 +45,8 @@ final class FlowTest extends TestCase
       }
       return $this->app;
     });
-    $registry->method('identity')->willReturnCallback(function (string $userId): array {
+    $registry->method('identity')->willReturnCallback(function (string $userId, array $application, string $ip, ?array $history = null): array {
+      $this->identityHistory[] = $history;
       if (!$this->allowed) {
         throw new AuthenticationException('Revoked access');
       }
@@ -87,8 +89,10 @@ final class FlowTest extends TestCase
     $request = $this->request();
     $response = $this->parse($this->authority->authorize($request, '42', '192.0.2.1'));
     Protocol::verify($response, $this->app['secret'], 'callback');
+    self::assertSame([null], $this->identityHistory);
     $exchange = $this->exchange($response, $request);
     self::assertSame('42', $this->authority->exchange($exchange, '192.0.2.2')['subject']);
+    self::assertSame([null, ['protocol' => 2, 'correlation' => $request['correlation']]], $this->identityHistory);
     self::assertNotSame($response['code'], $this->db->fetchOne('SELECT code_hash FROM sso_authorization_code'));
     $this->expectException(AuthenticationException::class);
     $this->authority->exchange($exchange, '192.0.2.2');
